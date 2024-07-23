@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'dart:async';
+
+import 'package:nepalmentors/welcome.dart';
 
 class MySplash extends StatefulWidget{
   const MySplash({super.key});
@@ -9,13 +13,12 @@ class MySplash extends StatefulWidget{
 
 class MySplashState extends State<MySplash> {
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 2),(){
-      Navigator.pushReplacementNamed(context, 'welcome');
+    Timer(const Duration(seconds: 2), (){
+      Get.to(const WelcomeScreen());
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +30,6 @@ class MySplashState extends State<MySplash> {
             fit: BoxFit.cover,
           ),
         ),
-
       ),
     );
   }
