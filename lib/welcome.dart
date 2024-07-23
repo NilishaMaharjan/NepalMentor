@@ -42,7 +42,9 @@ class WelcomeScreen extends StatelessWidget {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-
+          Image.asset(
+            'assets/welcome.png',
+          ),
           const Text(
             "WELCOME",
             style: TextStyle(fontWeight: FontWeight.bold),
