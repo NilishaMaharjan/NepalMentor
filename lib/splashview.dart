@@ -22,15 +22,13 @@ class MySplashState extends State<MySplash> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
+    return Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/logo.png'),
             fit: BoxFit.cover,
           ),
         ),
-      ),
     );
   }
 }
