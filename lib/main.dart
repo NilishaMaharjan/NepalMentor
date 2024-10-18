@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:nepalmentors/splashview.dart';
-import 'package:nepalmentors/welcome.dart';
 import 'package:nepalmentors/login.dart';
-import 'package:nepalmentors/register.dart';
 
 void main() {
-  runApp(MaterialApp(
-    debugShowCheckedModeBanner: false,
-      initialRoute: 'MySplash',
-      routes: {
-        'MySplash': (context ) => const MySplash(),
-        'Welcome': (context) =>  const WelcomeScreen(),
-        'login': (context) => const MyLogin(),
-        'register': (context) => const MyRegister()
-      },
-  ));
+  runApp(const MyApp());
 }
 
-
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return GetMaterialApp(
+      debugShowCheckedModeBanner: false,
+      initialRoute: '/splash',
+      getPages: [
+        GetPage(name: '/splash', page: () => const MySplash()),
+        GetPage(name: '/login', page: () => const LoginScreen()),
+      ],
+    );
+  }
+}
