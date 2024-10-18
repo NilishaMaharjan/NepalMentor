@@ -60,17 +60,31 @@ class LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 24.0),
 
-                // Log in Button
-                ElevatedButton(
-                  onPressed: () {
-                    // Handle login logic here
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal, // Button color
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                // Log in Button with the same size and shape as text fields
+                Container(
+                  height: 56.0, // Match the height of the text field
+                  decoration: BoxDecoration(
+                    color: Colors.teal, // Solid button color
+                    borderRadius: BorderRadius.circular(8.0), // Same shape as text fields
                   ),
-                  child: const Text('Log in'),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Handle login logic here
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.teal, // Ensure button is teal
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                      ),
+                      padding: EdgeInsets.zero, // Remove padding to fit the container
+                    ),
+                    child: const Text(
+                      'Log in',
+                      style: TextStyle(color: Colors.white), // Text color
+                    ),
+                  ),
                 ),
+
                 const SizedBox(height: 8.0),
 
                 // 'Or' between Log in and Google Login
@@ -103,12 +117,18 @@ class LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 16.0),
 
-                // Sign-up Options for Mentee or Mentor
-                Column(
+                // Don't have an account text
+                const Text(
+                  "Don't have an account?",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14.0),
+                ),
+                const SizedBox(height: 8.0), // Add some space before the signup options
+
+                // Sign-up Options for Mentee or Mentor in single line
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Don't have an account?"),
-                    const SizedBox(height: 4.0),
                     GestureDetector(
                       onTap: () {
                         // Handle mentee sign-up logic
@@ -118,21 +138,21 @@ class LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           color: Colors.teal,
                           fontWeight: FontWeight.bold,
+                          fontSize: 14.0, // Smaller font size
                         ),
                       ),
                     ),
-                    const SizedBox(height: 4.0),
-                    const Text('or'),
-                    const SizedBox(height: 4.0),
+                    const Text(' or ', style: TextStyle(fontSize: 14.0)),
                     GestureDetector(
                       onTap: () {
                         // Handle mentor application logic
                       },
                       child: const Text(
-                        'Apply to be a mentor',
+                        'apply to be a mentor',
                         style: TextStyle(
                           color: Colors.teal,
                           fontWeight: FontWeight.bold,
+                          fontSize: 14.0, // Smaller font size
                         ),
                       ),
                     ),
