@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart'; // Import GetX for navigation
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -60,50 +61,51 @@ class LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 24.0),
 
-                // Log in Button with the same size and shape as text fields
+                // Log in Button
                 Container(
-                  height: 56.0, // Match the height of the text field
+                  height: 56.0,
                   decoration: BoxDecoration(
-                    color: Colors.teal, // Solid button color
-                    borderRadius: BorderRadius.circular(8.0), // Same shape as text fields
+                    color: Colors.teal,
+                    borderRadius: BorderRadius.circular(8.0),
                   ),
                   child: ElevatedButton(
                     onPressed: () {
                       // Handle login logic here
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal, // Ensure button is teal
+                      backgroundColor: Colors.teal,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                        borderRadius: BorderRadius.circular(8.0),
                       ),
-                      padding: EdgeInsets.zero, // Remove padding to fit the container
+                      padding: EdgeInsets.zero,
                     ),
                     child: const Text(
                       'Log in',
-                      style: TextStyle(color: Colors.white), // Text color
+                      style: TextStyle(color: Colors.white),
                     ),
                   ),
                 ),
 
                 const SizedBox(height: 8.0),
-
-                // 'Or' between Log in and Google Login
-                const Text(
-                  'or',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16.0, color: Colors.grey),
-                ),
+                const Text('or', textAlign: TextAlign.center),
                 const SizedBox(height: 8.0),
 
                 // Google Login Button
-                TextButton.icon(
-                  onPressed: () {
-                    // Handle Google login logic
-                  },
-                  icon: const Icon(Icons.login, color: Colors.black),
-                  label: const Text(
-                    'Log in with Google',
-                    style: TextStyle(color: Colors.black),
+                Container(
+                  height: 56.0,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: TextButton.icon(
+                    onPressed: () {
+                      // Handle Google login logic
+                    },
+                    icon: const Icon(Icons.login, color: Colors.black),
+                    label: const Text(
+                      'Log in with Google',
+                      style: TextStyle(color: Colors.black),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16.0),
@@ -117,15 +119,14 @@ class LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 16.0),
 
-                // Don't have an account text
                 const Text(
                   "Don't have an account?",
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 14.0),
                 ),
-                const SizedBox(height: 8.0), // Add some space before the signup options
+                const SizedBox(height: 8.0),
 
-                // Sign-up Options for Mentee or Mentor in single line
+                // Mentor/Mentee Sign-up Options
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -138,21 +139,20 @@ class LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           color: Colors.teal,
                           fontWeight: FontWeight.bold,
-                          fontSize: 14.0, // Smaller font size
                         ),
                       ),
                     ),
                     const Text(' or ', style: TextStyle(fontSize: 14.0)),
                     GestureDetector(
                       onTap: () {
-                        // Handle mentor application logic
+                        // Navigate to the Mentor Registration Screen
+                        Get.toNamed('/mentorregistration'); // Corrected route
                       },
                       child: const Text(
                         'apply to be a mentor',
                         style: TextStyle(
                           color: Colors.teal,
                           fontWeight: FontWeight.bold,
-                          fontSize: 14.0, // Smaller font size
                         ),
                       ),
                     ),
@@ -166,7 +166,7 @@ class LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Helper function to build role selection tab
+  // Helper function for role selection
   Widget buildRoleTab(String title, bool isSelected) {
     return GestureDetector(
       onTap: () {
@@ -199,3 +199,4 @@ class LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+ 

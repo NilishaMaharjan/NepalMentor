@@ -14,7 +14,7 @@ class MySplashState extends State<MySplash> {
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(seconds: 2), () {
+    Timer(const Duration(seconds: 4), () {
       Get.off(() => const LoginScreen()); // Replace Get.to() with Get.off()
     });
   }
