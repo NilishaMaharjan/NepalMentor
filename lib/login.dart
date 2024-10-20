@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart'; // Import GetX for navigation
+import 'signup.dart'; // Import the SignupPage
+import 'forgetpw.dart'; // Import the ForgotPasswordPage
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -43,7 +45,6 @@ class LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 24.0),
 
-                // Email/Username TextField
                 const TextField(
                   decoration: InputDecoration(
                     labelText: 'Email or username',
@@ -56,7 +57,6 @@ class LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 16.0),
 
-                // Password TextField with Eye Icon
                 TextField(
                   obscureText: !_isPasswordVisible,
                   decoration: InputDecoration(
@@ -83,7 +83,6 @@ class LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 24.0),
 
-                // Log in Button
                 Container(
                   height: 56.0,
                   decoration: BoxDecoration(
@@ -92,7 +91,6 @@ class LoginScreenState extends State<LoginScreen> {
                   ),
                   child: ElevatedButton(
                     onPressed: () {
-                      // Navigate to Dashboard using GetX
                       Get.toNamed('/dashboard');
                     },
                     style: ElevatedButton.styleFrom(
@@ -113,7 +111,6 @@ class LoginScreenState extends State<LoginScreen> {
                 const Text('or', textAlign: TextAlign.center),
                 const SizedBox(height: 8.0),
 
-                // Google Login Button
                 Container(
                   height: 56.0,
                   decoration: BoxDecoration(
@@ -121,9 +118,7 @@ class LoginScreenState extends State<LoginScreen> {
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                   child: TextButton.icon(
-                    onPressed: () {
-                      // Handle Google login logic
-                    },
+                    onPressed: () {},
                     icon: const Icon(Icons.login, color: Colors.black),
                     label: const Text(
                       'Log in with Google',
@@ -133,12 +128,20 @@ class LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 16.0),
 
-                // Forgot Password
+                // Forgot Password Button
                 TextButton(
                   onPressed: () {
-                    // Handle forgot password logic
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ForgotPasswordPage(),
+                      ),
+                    );
                   },
-                  child: const Text('Forgot password?'),
+                  child: const Text(
+                    'Forgot password?',
+                    style: TextStyle(color: Colors.teal), // Set text color to black
+                  ),
                 ),
                 const SizedBox(height: 16.0),
 
@@ -149,13 +152,16 @@ class LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 8.0),
 
-                // Mentor/Mentee Sign-up Options
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     GestureDetector(
                       onTap: () {
-                        // Handle mentee sign-up logic
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const SignupPage()),
+                        ); // Direct navigation to SignupPage
                       },
                       child: const Text(
                         'Sign up as a mentee',
@@ -168,8 +174,7 @@ class LoginScreenState extends State<LoginScreen> {
                     const Text(' or ', style: TextStyle(fontSize: 14.0)),
                     GestureDetector(
                       onTap: () {
-                        // Navigate to the Mentor Registration Screen
-                        Get.toNamed('/mentorregistration'); // Example route
+                        Get.toNamed('/mentorregistration');
                       },
                       child: const Text(
                         'apply to be a mentor',
@@ -189,7 +194,6 @@ class LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Helper function for role selection
   Widget buildRoleTab(String title, bool isSelected) {
     return GestureDetector(
       onTap: () {
