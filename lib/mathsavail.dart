@@ -1,31 +1,47 @@
 import 'package:flutter/material.dart';
 
-class PrimaryLevelPage extends StatelessWidget {
-  const PrimaryLevelPage({super.key});
+class MathsPage extends StatelessWidget {
+  const MathsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Primary Level'),
-        backgroundColor: Colors.teal,
+        title: const Text('Mentors'),
+        backgroundColor: Colors.teal, // Header color changed to teal
       ),
       body: ListView(
-        children: [
-          ListTile(
-            title: const Text('Grade 7'),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () {
-              // Navigate to the Grade 7 Subjects Page
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const Grade7SubjectsPage()),
-              );
-            },
+        padding: const EdgeInsets.all(8.0),
+        children: const [
+          MentorCard(
+            name: 'Shubha Acharya',
+            role: 'Maths Specialist with 5 years experience',
+            rating: 4.9,
+            reviews: 20,
+            skills: ['Algebra', 'Calculus', 'Geometry'],
+            price: 3000,
+            imageUrl: 'assets/shubha.png',
+            isAvailable: true,
           ),
-          const ListTile(
-            title: Text('Grade 8'),
-            trailing: Icon(Icons.arrow_forward_ios),
+          MentorCard(
+            name: 'Nilisha Maharjan',
+            role: 'Maths Teacher for Grades 7-10',
+            rating: 4.9,
+            reviews: 12,
+            skills: ['Trigonometry', 'Statistics', 'Arithmetic'],
+            price: 2600,
+            imageUrl: 'assets/nili.png',
+            isAvailable: false,
+          ),
+          MentorCard(
+            name: 'Sanjeeta Acharya',
+            role: 'Maths Teacher for Grades 7-10',
+            rating: 4.8,
+            reviews: 15,
+            skills: ['Probability', 'Graphs', 'Functions'],
+            price: 2500,
+            imageUrl: 'assets/sanjeeta.png',
+            isAvailable: false,
           ),
         ],
       ),
@@ -34,170 +50,140 @@ class PrimaryLevelPage extends StatelessWidget {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(icon: Icon(Icons.school), label: 'My Learning'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.notifications), label: 'Notifications'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.account_circle), label: 'Account'),
+          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Notifications'),
+          BottomNavigationBarItem(icon: Icon(Icons.account_circle), label: 'Account'),
         ],
-        selectedItemColor: Colors.blueAccent,
+        selectedItemColor: Colors.teal,
         unselectedItemColor: Colors.grey,
       ),
     );
   }
 }
 
-class Grade7SubjectsPage extends StatelessWidget {
-  const Grade7SubjectsPage({super.key});
+class MentorCard extends StatelessWidget {
+  final String name;
+  final String role;
+  final double rating;
+  final int reviews;
+  final List<String> skills;
+  final int price;
+  final String imageUrl;
+  final bool isAvailable;
+
+  const MentorCard({
+    super.key,
+    required this.name,
+    required this.role,
+    required this.rating,
+    required this.reviews,
+    required this.skills,
+    required this.price,
+    required this.imageUrl,
+    required this.isAvailable,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Grade 7 Subjects'),
-        backgroundColor: Colors.teal,
-      ),
-      body: ListView(
-        children: [
-          const ListTile(
-            title:  Text('Science'),
-            trailing:  Icon(Icons.arrow_forward_ios),
-          ),
-          ListTile(
-            title: const Text('Maths'),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () {
-              // Navigate to the Maths Page
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const MathsPage()),
-              );
-            },
-          ),
-          const ListTile(
-            title: Text('Computer Science'),
-            trailing: Icon(Icons.arrow_forward_ios),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class MathsPage extends StatelessWidget {
-  const MathsPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Maths'),
-        backgroundColor: Colors.teal,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Available Mentors',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: ListView(
-                children: [
-                  _buildMentorCard(
-                    context,
-                    'Shubha Acharya',
-                    'assets/john_doe.png', // Replace with actual image path
-                    'Maths Specialist with 5 years experience',
-                    true, // Availability: true (green dot)
-                  ),
-                  _buildMentorCard(
-                    context,
-                    'Nilisha Maharjan',
-                    'assets/jane_smith.png', // Replace with actual image path
-                    'Maths Teacher for Grades 7-10',
-                    false, // Availability: false (red dot)
-                  ),
-                  _buildMentorCard(
-                    context,
-                    'Sanjeeta Acharya ',
-                    'assets/jane_smith.png', // Replace with actual image path
-                    'Maths Teacher for Grades 7-10',
-                    false,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMentorCard(BuildContext context, String name, String imagePath, String info, bool isAvailable) {
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      elevation: 3,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Mentor Photo
-            CircleAvatar(
-              radius: 30,
-              backgroundImage: AssetImage(imagePath),
-            ),
-            const SizedBox(width: 16),
-            // Mentor Info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    info,
-                    style: const TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                ],
-              ),
-            ),
-            // Availability Indicator and View Profile Button
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+      elevation: 5, // Added elevation for a shadow effect
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15), // Rounded corners
+      ),
+      margin: const EdgeInsets.symmetric(vertical: 10.0),
+      child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Availability Dot
+                CircleAvatar(
+                  radius: 40, // Kept the radius for visual preference
+                  backgroundImage: AssetImage(imageUrl),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20, // Increased font size for better visibility
+                        ),
+                      ),
+                      Text(
+                        role,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 16, // Adjusted font size for the role
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Row(
+                        children: [
+                          const Icon(Icons.star, color: Colors.amber, size: 18), // Slightly larger star
+                          const SizedBox(width: 5),
+                          Text('$rating ($reviews reviews)'),
+                        ],
+                      ),
+                      const SizedBox(height: 5),
+                      Wrap(
+                        spacing: 6, // Spacing between skill badges
+                        children: skills.map((skill) {
+                          return Chip(
+                            label: Text(skill),
+                            backgroundColor: Colors.grey.shade50, // Changed badge color to light grey
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 5),
+                      Text('Starting from: Rs. $price/month', style: const TextStyle(fontSize: 16)), // Adjusted font size for price
+                      const SizedBox(height: 10),
+                      ElevatedButton(
+                        onPressed: () {
+                          // TODO: Add navigation or action logic for View Profile
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal, // Button color
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10), // Rounded button
+                          ),
+                        ),
+                        child: const Text(
+                          'View Profile',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            top: 10,
+            right: 10,
+            child: Row(
+              children: [
                 Icon(
                   Icons.circle,
                   size: 12,
                   color: isAvailable ? Colors.green : Colors.red,
                 ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    // Handle View Profile action
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                const SizedBox(width: 8),
+                Text(
+                  isAvailable ? 'Available' : 'Unavailable',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
                   ),
-                  child: const Text('View Profile'),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

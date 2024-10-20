@@ -15,9 +15,9 @@ class PrimaryLevelPage extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            _buildGradeTile(context, 'Grade 7'),
+            buildGradeTile(context, 'Grade 7'),
             const SizedBox(height: 20), // Increased spacing between tiles
-            _buildGradeTile(context, 'Grade 8'),
+            buildGradeTile(context, 'Grade 8'),
           ],
         ),
       ),
@@ -37,7 +37,7 @@ class PrimaryLevelPage extends StatelessWidget {
     );
   }
 
-  Widget _buildGradeTile(BuildContext context, String grade) {
+  Widget buildGradeTile(BuildContext context, String grade) {
     return GestureDetector(
       onTap: () {
         if (grade == 'Grade 7') {
@@ -100,6 +100,19 @@ class Grade7SubjectsPage extends StatelessWidget {
           ],
         ),
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
+          BottomNavigationBarItem(icon: Icon(Icons.school), label: 'My Learning'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.notifications), label: 'Notifications'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.account_circle), label: 'Account'),
+        ],
+        selectedItemColor: Colors.teal,
+        unselectedItemColor: Colors.grey,
+      ),
     );
   }
 
@@ -128,7 +141,7 @@ class Grade7SubjectsPage extends StatelessWidget {
             children: [
               Text(
                 subject,
-                style:const  TextStyle(
+                style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w600, // Medium weight for subjects
                   color: Colors.teal,

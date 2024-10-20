@@ -8,6 +8,7 @@ import 'package:nepalmentors/dashboard.dart';
 import 'package:nepalmentors/signup.dart';
 import 'package:nepalmentors/forgetpw.dart';
 import 'package:nepalmentors/primary.dart';
+import 'package:nepalmentors/mathsavail.dart';
 
 void main() {
   runApp(const MyApp());
@@ -29,6 +30,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/mentorregistrationinfo', page: () => const MentorAdditionalInfo()), 
         GetPage(name: '/dashboard',page: () => const Dashboard()),
         GetPage(name: '/primarylevel', page: () => const PrimaryLevelPage()),
+        GetPage(name: '/grade7maths', page: () => const MathsPage()),
       ],
     );
   }
