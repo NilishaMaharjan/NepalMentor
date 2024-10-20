@@ -41,7 +41,7 @@ class MentorApplicationScreenState extends State<MentorRegistration> {
     if (_formKey.currentState!.validate()) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => MentorAdditionalInfo()),
+        MaterialPageRoute(builder: (context) => const MentorAdditionalInfo()),
       );
     }
   }

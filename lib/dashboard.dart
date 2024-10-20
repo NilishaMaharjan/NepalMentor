@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'primary.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -11,9 +12,8 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   File? _profileImage;
-  File? _learningPhoto;  // For the Learning Related Photo section
+  File? _learningPhoto;
 
-  // Function to pick an image from gallery or camera
   Future<void> _pickImage(ImageSource source, {bool isLearningPhoto = false}) async {
     final pickedImage = await ImagePicker().pickImage(source: source);
     if (pickedImage != null) {
@@ -36,7 +36,6 @@ class _DashboardState extends State<Dashboard> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Profile Avatar Section
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
@@ -71,7 +70,7 @@ class _DashboardState extends State<Dashboard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Welcome, Username!', // Replace with dynamic username
+                      'Welcome, Username!',
                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 5),
@@ -84,8 +83,6 @@ class _DashboardState extends State<Dashboard> {
               ],
             ),
           ),
-
-          // Learning Related Photo Section
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: GestureDetector(
@@ -114,7 +111,6 @@ class _DashboardState extends State<Dashboard> {
               ),
             ),
           ),
-
           const SizedBox(height: 20),
           const Padding(
             padding: EdgeInsets.all(16.0),
@@ -132,7 +128,15 @@ class _DashboardState extends State<Dashboard> {
                 mainAxisSpacing: 10,
                 crossAxisSpacing: 10,
                 children: [
-                  _buildLevelCard('Primary'),
+                  GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PrimaryLevelPage(),
+                      ),
+                    ),
+                    child: _buildLevelCard('Primary'),
+                  ),
                   _buildLevelCard('Secondary'),
                   _buildLevelCard('Higher'),
                   _buildLevelCard('Diploma'),
@@ -174,7 +178,6 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  // Dialog to choose between Camera or Gallery
   void _showImageSourceDialog(BuildContext context, {bool isLearningPhoto = false}) {
     showDialog(
       context: context,

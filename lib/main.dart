@@ -7,6 +7,7 @@ import 'package:nepalmentors/mentoradditionalinfo.dart';
 import 'package:nepalmentors/dashboard.dart';
 import 'package:nepalmentors/signup.dart';
 import 'package:nepalmentors/forgetpw.dart';
+import 'package:nepalmentors/primary.dart';
 
 void main() {
   runApp(const MyApp());
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/forgetpassword', page: () => const ForgotPasswordPage()),        GetPage(name: '/mentorregistration', page: () => const MentorRegistration()),
         GetPage(name: '/mentorregistrationinfo', page: () => const MentorAdditionalInfo()), 
         GetPage(name: '/dashboard',page: () => const Dashboard()),
+        GetPage(name: '/primarylevel', page: () => const PrimaryLevelPage()),
       ],
     );
   }
