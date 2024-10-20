@@ -1,4 +1,7 @@
+import 'dart:io';  // For File handling
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';  // For image selection
+import 'mentoradditionalinfo.dart';  // Import the next screen
 
 class MentorRegistration extends StatefulWidget {
   const MentorRegistration({super.key});
@@ -8,10 +11,9 @@ class MentorRegistration extends StatefulWidget {
 }
 
 class MentorApplicationScreenState extends State<MentorRegistration> {
-  // Form key to validate the form fields
   final _formKey = GlobalKey<FormState>();
 
-  // Define controllers for text fields
+  // Controllers for text fields
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -20,18 +22,39 @@ class MentorApplicationScreenState extends State<MentorRegistration> {
   final TextEditingController jobTitleController = TextEditingController();
   final TextEditingController companyController = TextEditingController();
 
+  File? _selectedImage;  // To store the selected image
+  final ImagePicker _picker = ImagePicker();  // Initialize ImagePicker
+  bool _obscurePassword = true; // Password visibility toggle
+
+  // Function to pick an image from gallery or camera
+  Future<void> _pickImage(ImageSource source) async {
+    final pickedFile = await _picker.pickImage(source: source);
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
+  }
+
+  // Function to handle the next step
+  void _goToNextStep() {
+    if (_formKey.currentState!.validate()) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => MentorAdditionalInfo()),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Apply as a mentor',
-          style: TextStyle(
-            fontSize: 24.0, // Adjust font size
-            fontWeight: FontWeight.bold, // Make text bold
-          ),
+          'Apply as a Mentor',
+          style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.teal, // Set AppBar color to teal
+        backgroundColor: Colors.teal,
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -43,6 +66,23 @@ class MentorApplicationScreenState extends State<MentorRegistration> {
               children: [
                 const SizedBox(height: 24.0),
 
+                // Upload photo section
+                Center(
+                  child: GestureDetector(
+                    onTap: () => _showImageSourceDialog(context),
+                    child: CircleAvatar(
+                      radius: 60,
+                      backgroundColor: Colors.grey[300],
+                      backgroundImage:
+                          _selectedImage != null ? FileImage(_selectedImage!) : null,
+                      child: _selectedImage == null
+                          ? const Icon(Icons.add_a_photo, size: 50, color: Colors.teal)
+                          : null,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24.0),
+
                 // First Name
                 TextFormField(
                   controller: firstNameController,
@@ -50,11 +90,10 @@ class MentorApplicationScreenState extends State<MentorRegistration> {
                     labelText: 'First Name',
                     border: OutlineInputBorder(),
                     focusedBorder: OutlineInputBorder(
-                      borderSide:
-                          BorderSide(color: Colors.teal, width: 2.0), // Teal border when focused
+                      borderSide: BorderSide(color: Colors.teal, width: 2.0),
                     ),
                     floatingLabelStyle: TextStyle(
-                      color: Colors.teal, // Teal label color when focused
+                      color: Colors.teal,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -74,8 +113,7 @@ class MentorApplicationScreenState extends State<MentorRegistration> {
                     labelText: 'Last Name',
                     border: OutlineInputBorder(),
                     focusedBorder: OutlineInputBorder(
-                      borderSide:
-                          BorderSide(color: Colors.teal, width: 2.0), // Teal border when focused
+                      borderSide: BorderSide(color: Colors.teal, width: 2.0),
                     ),
                     floatingLabelStyle: TextStyle(
                       color: Colors.teal,
@@ -98,8 +136,7 @@ class MentorApplicationScreenState extends State<MentorRegistration> {
                     labelText: 'Email',
                     border: OutlineInputBorder(),
                     focusedBorder: OutlineInputBorder(
-                      borderSide:
-                          BorderSide(color: Colors.teal, width: 2.0), // Teal border when focused
+                      borderSide: BorderSide(color: Colors.teal, width: 2.0),
                     ),
                     floatingLabelStyle: TextStyle(
                       color: Colors.teal,
@@ -120,19 +157,29 @@ class MentorApplicationScreenState extends State<MentorRegistration> {
                 // Password
                 TextFormField(
                   controller: passwordController,
-                  decoration: const InputDecoration(
+                  obscureText: _obscurePassword,
+                  decoration: InputDecoration(
                     labelText: 'Password',
-                    border: OutlineInputBorder(),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide:
-                          BorderSide(color: Colors.teal, width: 2.0), // Teal border when focused
+                    border: const OutlineInputBorder(),
+                    focusedBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.teal, width: 2.0),
                     ),
-                    floatingLabelStyle: TextStyle(
+                    floatingLabelStyle: const TextStyle(
                       color: Colors.teal,
                       fontWeight: FontWeight.bold,
                     ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        color: Colors.teal,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
                   ),
-                  obscureText: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your password';
@@ -149,8 +196,7 @@ class MentorApplicationScreenState extends State<MentorRegistration> {
                     labelText: 'Location',
                     border: OutlineInputBorder(),
                     focusedBorder: OutlineInputBorder(
-                      borderSide:
-                          BorderSide(color: Colors.teal, width: 2.0), // Teal border when focused
+                      borderSide: BorderSide(color: Colors.teal, width: 2.0),
                     ),
                     floatingLabelStyle: TextStyle(
                       color: Colors.teal,
@@ -173,8 +219,7 @@ class MentorApplicationScreenState extends State<MentorRegistration> {
                     labelText: 'Job Title',
                     border: OutlineInputBorder(),
                     focusedBorder: OutlineInputBorder(
-                      borderSide:
-                          BorderSide(color: Colors.teal, width: 2.0), // Teal border when focused
+                      borderSide: BorderSide(color: Colors.teal, width: 2.0),
                     ),
                     floatingLabelStyle: TextStyle(
                       color: Colors.teal,
@@ -197,8 +242,7 @@ class MentorApplicationScreenState extends State<MentorRegistration> {
                     labelText: 'Company (Optional)',
                     border: OutlineInputBorder(),
                     focusedBorder: OutlineInputBorder(
-                      borderSide:
-                          BorderSide(color: Colors.teal, width: 2.0), // Teal border when focused
+                      borderSide: BorderSide(color: Colors.teal, width: 2.0),
                     ),
                     floatingLabelStyle: TextStyle(
                       color: Colors.teal,
@@ -206,37 +250,58 @@ class MentorApplicationScreenState extends State<MentorRegistration> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24.0),
+                const SizedBox(height: 16.0),
+
+                // Next Button
+                SizedBox(
+                  height: 60,
+                  child: ElevatedButton(
+                    onPressed: _goToNextStep,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.teal,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(4.0)),
+                      ),
+                    ),
+                    child: const Text(
+                      'Next',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.small(
-        onPressed: () {
-          if (_formKey.currentState!.validate()) {
-            // Handle next action here (e.g., navigate to the next step)
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Proceeding to the next step!')),
-            );
-          }
-        },
-        tooltip: 'Next',
-        backgroundColor: Colors.teal,
-        child: const Icon(Icons.navigate_next),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
-  // Clear form fields
-  void clearFields() {
-    firstNameController.clear();
-    lastNameController.clear();
-    emailController.clear();
-    passwordController.clear();
-    locationController.clear();
-    jobTitleController.clear();
-    companyController.clear();
+  // Image source selection dialog
+  void _showImageSourceDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Choose Image Source'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                _pickImage(ImageSource.camera);
+                Navigator.pop(context);
+              },
+              child: const Text('Camera'),
+            ),
+            TextButton(
+              onPressed: () {
+                _pickImage(ImageSource.gallery);
+                Navigator.pop(context);
+              },
+              child: const Text('Gallery'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

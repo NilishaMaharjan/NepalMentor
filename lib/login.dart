@@ -10,6 +10,7 @@ class LoginScreen extends StatefulWidget {
 
 class LoginScreenState extends State<LoginScreen> {
   bool isMentee = true; // Track whether 'Mentee' or 'Mentor' is selected.
+  bool _isPasswordVisible = false; // Track password visibility.
 
   @override
   Widget build(BuildContext context) {
@@ -47,17 +48,38 @@ class LoginScreenState extends State<LoginScreen> {
                   decoration: InputDecoration(
                     labelText: 'Email or username',
                     border: OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.teal, width: 2.0),
+                    ),
+                    floatingLabelStyle: TextStyle(color: Colors.teal),
                   ),
                 ),
                 const SizedBox(height: 16.0),
 
-                // Password TextField
-                const TextField(
+                // Password TextField with Eye Icon
+                TextField(
+                  obscureText: !_isPasswordVisible,
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
+                    focusedBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.teal, width: 2.0),
+                    ),
+                    floatingLabelStyle: const TextStyle(color: Colors.teal),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: Colors.teal,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isPasswordVisible = !_isPasswordVisible;
+                        });
+                      },
+                    ),
                   ),
-                  obscureText: true,
                 ),
                 const SizedBox(height: 24.0),
 
@@ -70,7 +92,8 @@ class LoginScreenState extends State<LoginScreen> {
                   ),
                   child: ElevatedButton(
                     onPressed: () {
-                      // Handle login logic here
+                      // Navigate to Dashboard using GetX
+                      Get.toNamed('/dashboard');
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.teal,
@@ -146,7 +169,7 @@ class LoginScreenState extends State<LoginScreen> {
                     GestureDetector(
                       onTap: () {
                         // Navigate to the Mentor Registration Screen
-                        Get.toNamed('/mentorregistration'); // Corrected route
+                        Get.toNamed('/mentorregistration'); // Example route
                       },
                       child: const Text(
                         'apply to be a mentor',
@@ -199,4 +222,3 @@ class LoginScreenState extends State<LoginScreen> {
     );
   }
 }
- 
