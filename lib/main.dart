@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:nepalmentors/profile.dart';
 import 'package:nepalmentors/splashview.dart';
 import 'package:nepalmentors/login.dart';
 import 'package:nepalmentors/mentorregister1.dart';
@@ -26,11 +27,13 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/splash', page: () => const MySplash()),
         GetPage(name: '/login', page: () => const LoginScreen()),
         GetPage(name: '/signupmentee', page: () => const SignupPage()),
-        GetPage(name: '/forgetpassword', page: () => const ForgotPasswordPage()),        GetPage(name: '/mentorregistration', page: () => const MentorRegistration()),
+        GetPage(name: '/forgetpassword', page: () => const ForgotPasswordPage()),     
+        GetPage(name: '/mentorregistration', page: () => const MentorRegistration()),
         GetPage(name: '/mentorregistrationinfo', page: () => const MentorAdditionalInfo()), 
         GetPage(name: '/dashboard',page: () => const Dashboard()),
         GetPage(name: '/primarylevel', page: () => const PrimaryLevelPage()),
         GetPage(name: '/grade7maths', page: () => const MathsPage()),
+        GetPage(name: '/mentorprofile', page: () => const MentorProfilePage()),
       ],
     );
   }

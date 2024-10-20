@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'profile.dart'; // Import the profile.dart page
 
 class MathsPage extends StatelessWidget {
   const MathsPage({super.key});
@@ -143,7 +144,12 @@ class MentorCard extends StatelessWidget {
                       const SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: () {
-                          // TODO: Add navigation or action logic for View Profile
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MentorProfilePage(), // Navigate to MentorProfilePage
+                            ),
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.teal, // Button color
