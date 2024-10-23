@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:async';
-import 'package:nepalmentors/login.dart';
+import 'package:nepalmentors/screens/login.dart';
 
 class MySplash extends StatefulWidget {
   const MySplash({super.key});

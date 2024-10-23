@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nepalmentors/profile.dart';
-import 'package:nepalmentors/splashview.dart';
-import 'package:nepalmentors/login.dart';
-import 'package:nepalmentors/mentorregister1.dart';
-import 'package:nepalmentors/mentoradditionalinfo.dart';
-import 'package:nepalmentors/dashboard.dart';
-import 'package:nepalmentors/signup.dart';
-import 'package:nepalmentors/forgetpw.dart';
-import 'package:nepalmentors/primary.dart';
-import 'package:nepalmentors/mathsavail.dart';
+import 'package:nepalmentors/screens/profile.dart';
+import 'package:nepalmentors/screens/splashview.dart';
+import 'package:nepalmentors/screens/login.dart';
+import 'package:nepalmentors/screens/mentorregister1.dart';
+import 'package:nepalmentors/screens/mentoradditionalinfo.dart';
+import 'package:nepalmentors/screens/dashboard.dart';
+import 'package:nepalmentors/screens/signup.dart';
+import 'package:nepalmentors/screens/forgetpw.dart';
+import 'package:nepalmentors/screens/primary.dart';
+import 'package:nepalmentors/screens/mathsavail.dart';
 
 void main() {
   runApp(const MyApp());

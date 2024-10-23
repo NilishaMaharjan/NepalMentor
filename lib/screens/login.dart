@@ -1,7 +1,10 @@
+import 'dart:convert';  // For JSON encoding and decoding
 import 'package:flutter/material.dart';
-import 'package:get/get.dart'; // Import GetX for navigation
-import 'signup.dart'; // Import the SignupPage
-import 'forgetpw.dart'; // Import the ForgotPasswordPage
+import 'package:get/get.dart';  // For navigation
+import 'package:http/http.dart' as http;  // For HTTP requests
+import 'package:shared_preferences/shared_preferences.dart';  // To store token locally
+import 'signup.dart';  // Signup page import
+import 'forgetpw.dart';  // Forgot password page import
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,8 +14,46 @@ class LoginScreen extends StatefulWidget {
 }
 
 class LoginScreenState extends State<LoginScreen> {
-  bool isMentee = true; // Track whether 'Mentee' or 'Mentor' is selected.
-  bool _isPasswordVisible = false; // Track password visibility.
+  bool isMentee = true;  // Track role selection (Mentee/Mentor)
+  bool _isPasswordVisible = false;  // Password visibility toggle
+  final TextEditingController emailController = TextEditingController();  // Email input
+  final TextEditingController passwordController = TextEditingController();  // Password input
+
+  // Function to perform login and call backend API
+  Future<void> loginUser() async {
+    final email = emailController.text;
+    final password = passwordController.text;
+    final role = isMentee ? 'mentee' : 'mentor';  // Use selected role
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://192.168.1.93:3000/api/auth/login'),  // My IP address
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+          'role': role,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        String token = data['token'];
+
+        // Store token using shared preferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', token);
+
+        Get.offNamed('/dashboard');  // Navigate to dashboard
+      } else {
+        Get.snackbar('Error', 'Login failed: ${response.body}',
+            snackPosition: SnackPosition.BOTTOM);
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Something went wrong: $e',
+          snackPosition: SnackPosition.BOTTOM);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +76,7 @@ class LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 32.0),
 
-                // Tabs for 'Mentee' and 'Mentor'
+                // Role Selection Tabs
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -45,8 +86,10 @@ class LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 24.0),
 
-                const TextField(
-                  decoration: InputDecoration(
+                // Email Input
+                TextField(
+                  controller: emailController,
+                  decoration: const InputDecoration(
                     labelText: 'Email or username',
                     border: OutlineInputBorder(),
                     focusedBorder: OutlineInputBorder(
@@ -57,7 +100,9 @@ class LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 16.0),
 
+                // Password Input
                 TextField(
+                  controller: passwordController,
                   obscureText: !_isPasswordVisible,
                   decoration: InputDecoration(
                     labelText: 'Password',
@@ -68,9 +113,7 @@ class LoginScreenState extends State<LoginScreen> {
                     floatingLabelStyle: const TextStyle(color: Colors.teal),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _isPasswordVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off,
+                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
                         color: Colors.teal,
                       ),
                       onPressed: () {
@@ -83,6 +126,7 @@ class LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 24.0),
 
+                // Login Button
                 Container(
                   height: 56.0,
                   decoration: BoxDecoration(
@@ -90,9 +134,7 @@ class LoginScreenState extends State<LoginScreen> {
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                   child: ElevatedButton(
-                    onPressed: () {
-                      Get.toNamed('/dashboard');
-                    },
+                    onPressed: loginUser,  // Call login function
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.teal,
                       shape: RoundedRectangleBorder(
@@ -111,6 +153,7 @@ class LoginScreenState extends State<LoginScreen> {
                 const Text('or', textAlign: TextAlign.center),
                 const SizedBox(height: 8.0),
 
+                // Google Login Button (Placeholder)
                 Container(
                   height: 56.0,
                   decoration: BoxDecoration(
@@ -140,7 +183,7 @@ class LoginScreenState extends State<LoginScreen> {
                   },
                   child: const Text(
                     'Forgot password?',
-                    style: TextStyle(color: Colors.teal), // Set text color to black
+                    style: TextStyle(color: Colors.teal),
                   ),
                 ),
                 const SizedBox(height: 16.0),
@@ -152,6 +195,7 @@ class LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 8.0),
 
+                // Signup and Mentor Application Links
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -160,8 +204,9 @@ class LoginScreenState extends State<LoginScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const SignupPage()),
-                        ); // Direct navigation to SignupPage
+                            builder: (context) => const SignupPage(),
+                          ),
+                        );
                       },
                       child: const Text(
                         'Sign up as a mentee',
@@ -194,6 +239,7 @@ class LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // Helper to build Role Tabs
   Widget buildRoleTab(String title, bool isSelected) {
     return GestureDetector(
       onTap: () {
