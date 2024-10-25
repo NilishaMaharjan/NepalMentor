@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart'; // Import GetX for navigation
+import 'package:get/get.dart'; 
+import 'package:http/http.dart' as http; 
+import 'dart:convert'; 
 
 class ForgotPasswordPage extends StatelessWidget {
   const ForgotPasswordPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final TextEditingController emailController = TextEditingController(); 
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Forgot Password'),
@@ -38,15 +42,16 @@ class ForgotPasswordPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 32.0),
 
-                const TextField(
-                  decoration: InputDecoration(
-                    prefixIcon:  Icon(Icons.email, color: Colors.teal), // Email icon
+                TextField(
+                  controller: emailController, // Set the controller
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.email, color: Colors.teal),
                     labelText: 'Email',
-                    border:  OutlineInputBorder(),
-                    focusedBorder:  OutlineInputBorder(
+                    border: OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.teal, width: 2.0),
                     ),
-                    floatingLabelStyle:  TextStyle(color: Colors.teal),
+                    floatingLabelStyle: TextStyle(color: Colors.teal),
                   ),
                 ),
                 const SizedBox(height: 24.0),
@@ -58,15 +63,55 @@ class ForgotPasswordPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                   child: ElevatedButton(
-                    onPressed: () {
-                      // Implement your password reset logic here
-                      Get.snackbar(
-                        'Reset Link Sent',
-                        'Please check your email for the password reset link.',
-                        snackPosition: SnackPosition.BOTTOM,
-                        backgroundColor: Colors.white,
-                        colorText: Colors.teal,
-                      );
+                    onPressed: () async {
+                      String email = emailController.text.trim();
+
+                      // Validate the email
+                      if (email.isEmpty) {
+                        Get.snackbar(
+                          'Error', 'Please enter your email.',
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: Colors.red,
+                          colorText: Colors.white,
+                        );
+                        return;
+                      }
+
+                      // Call the backend API
+                      try {
+                        final response = await http.post(
+                          Uri.parse('https://192.168.1.8:3000/api/auth/forgot-password'),//My IP address 
+                          headers: {'Content-Type': 'application/json'},
+                          body: json.encode({'email': email}),
+                        );
+
+                        if (response.statusCode == 200) {
+                          Get.snackbar(
+                            'Reset Link Sent',
+                            'Please check your email for the password reset link.',
+                            snackPosition: SnackPosition.BOTTOM,
+                            backgroundColor: Colors.white,
+                            colorText: Colors.teal,
+                          );
+                        } else {
+                          final errorResponse = json.decode(response.body);
+                          String errorMessage = errorResponse['message'] ?? 'Failed to send reset link.';
+                          Get.snackbar(
+                            'Error', errorMessage,
+                            snackPosition: SnackPosition.BOTTOM,
+                            backgroundColor: Colors.red,
+                            colorText: Colors.white,
+                          );
+                        }
+                      } catch (e) {
+                        Get.snackbar(
+                          'Error',
+                          'An error occurred. Please try again later.',
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: Colors.red,
+                          colorText: Colors.white,
+                        );
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.teal,
@@ -88,8 +133,10 @@ class ForgotPasswordPage extends StatelessWidget {
                     // Navigate back to the login page
                     Get.back();
                   },
-                  child: const Text('Back to Login',
-                  style:TextStyle(color: Colors.black),),
+                  child: const Text(
+                    'Back to Login',
+                    style: TextStyle(color: Colors.black),
+                  ),
                 ),
               ],
             ),
