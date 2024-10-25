@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart'; // Import GetX for Snackbar
+import 'package:http/http.dart' as http; // Import HTTP package
+import 'dart:convert'; // Import for JSON encoding/decoding
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -14,9 +16,13 @@ class SignupPageState extends State<SignupPage> {
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController ageController = TextEditingController();
+  final TextEditingController institutionController = TextEditingController();
+  final TextEditingController locationController = TextEditingController();
 
   final FocusNode _passwordFocus = FocusNode();
   bool _obscurePassword = true;
+  bool _isRobotChecked = false; // Checkbox state
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +31,7 @@ class SignupPageState extends State<SignupPage> {
         title: const Text('Signup'),
         backgroundColor: Colors.teal,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Form(
           key: _formKey,
@@ -58,16 +64,50 @@ class SignupPageState extends State<SignupPage> {
                 },
               ),
               const SizedBox(height: 16.0),
+              buildTextFormField(
+                controller: ageController,
+                label: 'Age',
+                validatorMessage: 'Please enter your age',
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 16.0),
+              buildTextFormField(
+                controller: institutionController,
+                label: 'Institution',
+                validatorMessage: 'Please enter your institution',
+              ),
+              const SizedBox(height: 16.0),
+              buildTextFormField(
+                controller: locationController,
+                label: 'Location',
+                validatorMessage: 'Please enter your location',
+              ),
+              const SizedBox(height: 16.0),
               buildPasswordField(),
               const SizedBox(height: 16.0),
-              buildPasswordRules(), // Display password rules here
+              buildPasswordRules(),
+              const SizedBox(height: 16.0),
+              CheckboxListTile(
+                title: const Text("I'm not a robot"),
+                value: _isRobotChecked,
+                onChanged: (bool? value) {
+                  setState(() {
+                    _isRobotChecked = value ?? false;
+                  });
+                },
+                controlAffinity:
+                    ListTileControlAffinity.leading, // Checkbox on the left
+              ),
               const SizedBox(height: 24.0),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      Get.snackbar('Success', 'Signup successful');
+                    if (_formKey.currentState!.validate() && _isRobotChecked) {
+                      registerMentee();
+                    } else if (!_isRobotChecked) {
+                      Get.snackbar(
+                          'Error', "Please confirm you're not a robot.");
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -84,6 +124,34 @@ class SignupPageState extends State<SignupPage> {
         ),
       ),
     );
+  }
+
+  Future<void> registerMentee() async {
+    final response = await http.post(
+      Uri.parse(
+          'http://your_backend_url/mentee'), // Replace with your backend URL
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'firstName': firstNameController.text,
+        'lastName': lastNameController.text,
+        'email': emailController.text,
+        'password': passwordController.text,
+        'age': ageController.text,
+        'institution': institutionController.text,
+        'location': locationController.text,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      Get.snackbar('Success',
+          'Mentee registered successfully. A verification email has been sent.');
+      // Navigate to the login page after successful registration
+      Get.offNamed(
+          '/login'); // Ensure you have a route defined for the login page
+    } else {
+      Get.snackbar(
+          'Error', json.decode(response.body)['msg'] ?? 'Registration failed');
+    }
   }
 
   Widget buildTextFormField({
@@ -152,8 +220,7 @@ class SignupPageState extends State<SignupPage> {
         if (value.length < 8 || value.length > 16) {
           return 'Password must be 8-16 characters long';
         }
-        if (!RegExp(r'^(?=.*[a-zA-Z])(?=.*\d)[A-Za-z\d]+$')
-            .hasMatch(value)) {
+        if (!RegExp(r'^(?=.*[a-zA-Z])(?=.*\d)[A-Za-z\d]+$').hasMatch(value)) {
           return 'Password must be alphanumeric';
         }
         return null;
@@ -186,7 +253,7 @@ class SignupPageState extends State<SignupPage> {
 class BulletPoint extends StatelessWidget {
   final String text;
 
-  const BulletPoint({super.key, required this.text}); // Named parameter for text
+  const BulletPoint({super.key, required this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -204,5 +271,3 @@ class BulletPoint extends StatelessWidget {
     );
   }
 }
-//Signup lai bottom ma rakhne , I am not a robot add garne 
-//password requirements add garne 
