@@ -11,6 +11,7 @@ import 'package:nepalmentors/screens/signup.dart';
 import 'package:nepalmentors/screens/forgetpw.dart';
 import 'package:nepalmentors/screens/primary.dart';
 import 'package:nepalmentors/screens/mathsavail.dart';
+import 'package:nepalmentors/screens/resetpw.dart';
 
 void main() {
   runApp(const MyApp());
@@ -41,6 +42,14 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/primarylevel', page: () => const PrimaryLevelPage()),
         GetPage(name: '/grade7maths', page: () => const MathsPage()),
         GetPage(name: '/mentorprofile', page: () => const MentorProfilePage()),
+        GetPage(
+          name: '/reset-password/:token',
+          page: () {
+            // Get the token from the parameters
+            final token = Get.parameters['token']!;
+            return ResetPasswordPage(token: token);
+          },
+        )
       ],
     );
   }
