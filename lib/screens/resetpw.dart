@@ -2,19 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart'; // Import GetX for navigation
 import 'package:http/http.dart' as http; // Import http package
 import 'dart:convert'; // Import for json encoding
-import 'resetpw.dart'; // Import the ResetPasswordPage
 
-class ForgotPasswordPage extends StatelessWidget {
-  const ForgotPasswordPage({super.key});
+class ResetPasswordPage extends StatelessWidget {
+  final String token; // Pass the reset token to this page
+  const ResetPasswordPage({required this.token, super.key});
 
   @override
   Widget build(BuildContext context) {
-    final TextEditingController emailController =
-        TextEditingController(); // Controller for email field
+    final TextEditingController passwordController = TextEditingController();
+    final TextEditingController confirmPasswordController =
+        TextEditingController();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Forgot Password'),
+        title: const Text('Reset Password'),
         backgroundColor: Colors.teal,
       ),
       body: Padding(
@@ -26,34 +27,38 @@ class ForgotPasswordPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const Text(
-                  'Reset Your Password',
+                  'Enter New Password',
                   style: TextStyle(
                     fontSize: 32.0,
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 8.0),
-                const Text(
-                  'Provide your account\'s email for which you want to reset your password.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.black54,
-                  ),
-                ),
                 const SizedBox(height: 32.0),
                 TextField(
-                  controller: emailController, // Set the controller
+                  controller: passwordController,
                   decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.email, color: Colors.teal),
-                    labelText: 'Email',
+                    labelText: 'New Password',
                     border: OutlineInputBorder(),
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.teal, width: 2.0),
                     ),
                     floatingLabelStyle: TextStyle(color: Colors.teal),
                   ),
+                  obscureText: true,
+                ),
+                const SizedBox(height: 16.0),
+                TextField(
+                  controller: confirmPasswordController,
+                  decoration: const InputDecoration(
+                    labelText: 'Confirm Password',
+                    border: OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.teal, width: 2.0),
+                    ),
+                    floatingLabelStyle: TextStyle(color: Colors.teal),
+                  ),
+                  obscureText: true,
                 ),
                 const SizedBox(height: 24.0),
                 Container(
@@ -64,13 +69,15 @@ class ForgotPasswordPage extends StatelessWidget {
                   ),
                   child: ElevatedButton(
                     onPressed: () async {
-                      String email = emailController.text.trim();
+                      String newPassword = passwordController.text.trim();
+                      String confirmPassword =
+                          confirmPasswordController.text.trim();
 
-                      // Validate the email
-                      if (email.isEmpty) {
+                      // Validate the new password
+                      if (newPassword.isEmpty) {
                         Get.snackbar(
                           'Error',
-                          'Please enter your email.',
+                          'Please enter a new password.',
                           snackPosition: SnackPosition.BOTTOM,
                           backgroundColor: Colors.red,
                           colorText: Colors.white,
@@ -78,33 +85,39 @@ class ForgotPasswordPage extends StatelessWidget {
                         return;
                       }
 
-                      // Call the backend API
+                      if (newPassword != confirmPassword) {
+                        Get.snackbar(
+                          'Error',
+                          'Passwords do not match.',
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: Colors.red,
+                          colorText: Colors.white,
+                        );
+                        return;
+                      }
+
+                      // Call the backend API for resetting the password
                       try {
                         final response = await http.post(
                           Uri.parse(
-                              'http://192.168.1.66:3000/api/auth/forgot-password'),
+                              'http://192.168.1.66:3000/api/auth/reset-password/$token'),
                           headers: {'Content-Type': 'application/json'},
-                          body: json.encode({'email': email}),
+                          body: json.encode({'password': newPassword}),
                         );
 
                         if (response.statusCode == 200) {
-                          // Assuming the backend returns a token for the reset password link
-                          final responseData = json.decode(response.body);
-                          final String token =
-                              responseData['token']; // Get the token
-
                           Get.snackbar(
-                            'Reset Link Sent',
-                            'Please check your email for the password reset link.',
+                            'Success',
+                            'Password has been reset successfully.',
                             snackPosition: SnackPosition.BOTTOM,
                             backgroundColor: Colors.white,
                             colorText: Colors.teal,
                           );
 
-                          // Navigate to the Reset Password page with the token
-                          Get.to(() => ResetPasswordPage(
-                              token:
-                                  token)); // Redirect to ResetPasswordPage with token
+                          // Navigate back to login or another appropriate page
+                          Future.delayed(const Duration(seconds: 2), () {
+                            Get.offAllNamed('/login'); // Redirect to login page
+                          });
                         } else {
                           final errorResponse = json.decode(response.body);
                           Get.snackbar(
@@ -134,7 +147,7 @@ class ForgotPasswordPage extends StatelessWidget {
                       padding: EdgeInsets.zero,
                     ),
                     child: const Text(
-                      'Send Reset Link',
+                      'Reset Password',
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
