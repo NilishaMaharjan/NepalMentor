@@ -80,7 +80,7 @@ class ForgotPasswordPage extends StatelessWidget {
                       // Call the backend API
                       try {
                         final response = await http.post(
-                          Uri.parse('https://192.168.1.8:3000/api/auth/forgot-password'),//My IP address 
+                          Uri.parse('https://192.168.1.13:3000/api/auth/forgot-password'),//My IP address 
                           headers: {'Content-Type': 'application/json'},
                           body: json.encode({'email': email}),
                         );

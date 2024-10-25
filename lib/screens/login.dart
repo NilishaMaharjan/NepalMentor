@@ -1,10 +1,10 @@
-import 'dart:convert';  // For JSON encoding and decoding
+import 'dart:convert'; // For JSON encoding and decoding
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';  // For navigation
-import 'package:http/http.dart' as http;  // For HTTP requests
-import 'package:shared_preferences/shared_preferences.dart';  // To store token locally
-import 'signup.dart';  // Signup page import
-import 'forgetpw.dart';  // Forgot password page import
+import 'package:get/get.dart'; // For navigation
+import 'package:http/http.dart' as http; // For HTTP requests
+import 'package:shared_preferences/shared_preferences.dart'; // To store token locally
+import 'signup.dart'; // Signup page import
+import 'forgetpw.dart'; // Forgot password page import
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,20 +14,22 @@ class LoginScreen extends StatefulWidget {
 }
 
 class LoginScreenState extends State<LoginScreen> {
-  bool isMentee = true;  // Track role selection (Mentee/Mentor)
-  bool _isPasswordVisible = false;  // Password visibility toggle
-  final TextEditingController emailController = TextEditingController();  // Email input
-  final TextEditingController passwordController = TextEditingController();  // Password input
+  bool isMentee = true; // Track role selection (Mentee/Mentor)
+  bool _isPasswordVisible = false; // Password visibility toggle
+  final TextEditingController emailController =
+      TextEditingController(); // Email input
+  final TextEditingController passwordController =
+      TextEditingController(); // Password input
 
   // Function to perform login and call backend API
   Future<void> loginUser() async {
     final email = emailController.text;
     final password = passwordController.text;
-    final role = isMentee ? 'mentee' : 'mentor';  // Use selected role
+    final role = isMentee ? 'mentee' : 'mentor'; // Use selected role
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.1.8:3000/api/auth/login'),  // My IP address
+        Uri.parse('http://192.168.1.13:3000/api/auth/login'), // My IP address
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': email,
@@ -44,7 +46,12 @@ class LoginScreenState extends State<LoginScreen> {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', token);
 
-        Get.offNamed('/dashboard');  // Navigate to dashboard
+        // Conditional navigation based on role
+        if (role == 'mentor') {
+          Get.offNamed('/mentordashboard'); // Navigate to mentor dashboard
+        } else {
+          Get.offNamed('/dashboard'); // Navigate to mentee dashboard
+        }
       } else {
         Get.snackbar('Error', 'Login failed: ${response.body}',
             snackPosition: SnackPosition.BOTTOM);
@@ -113,7 +120,9 @@ class LoginScreenState extends State<LoginScreen> {
                     floatingLabelStyle: const TextStyle(color: Colors.teal),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        _isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                         color: Colors.teal,
                       ),
                       onPressed: () {
@@ -134,7 +143,7 @@ class LoginScreenState extends State<LoginScreen> {
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                   child: ElevatedButton(
-                    onPressed: loginUser,  // Call login function
+                    onPressed: loginUser, // Call login function
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.teal,
                       shape: RoundedRectangleBorder(

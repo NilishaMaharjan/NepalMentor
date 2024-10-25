@@ -14,7 +14,8 @@ class _DashboardState extends State<Dashboard> {
   File? _profileImage;
   File? _learningPhoto;
 
-  Future<void> _pickImage(ImageSource source, {bool isLearningPhoto = false}) async {
+  Future<void> _pickImage(ImageSource source,
+      {bool isLearningPhoto = false}) async {
     final pickedImage = await ImagePicker().pickImage(source: source);
     if (pickedImage != null) {
       setState(() {
@@ -71,12 +72,14 @@ class _DashboardState extends State<Dashboard> {
                   children: [
                     Text(
                       'Welcome, Username!',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 5),
                     Text(
                       '"Learning is a treasure that will follow its \n  owner everywhere."',
-                      style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+                      style:
+                          TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
                     ),
                   ],
                 ),
@@ -86,7 +89,8 @@ class _DashboardState extends State<Dashboard> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: GestureDetector(
-              onTap: () => _showImageSourceDialog(context, isLearningPhoto: true),
+              onTap: () =>
+                  _showImageSourceDialog(context, isLearningPhoto: true),
               child: Container(
                 height: 150,
                 decoration: BoxDecoration(
@@ -153,13 +157,14 @@ class _DashboardState extends State<Dashboard> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(Icons.school), label: 'My Learning'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.school), label: 'My Learning'),
           BottomNavigationBarItem(
               icon: Icon(Icons.notifications), label: 'Notifications'),
           BottomNavigationBarItem(
               icon: Icon(Icons.account_circle), label: 'Account'),
         ],
-        selectedItemColor: Colors.blueAccent,
+        selectedItemColor: const Color.fromARGB(255, 47, 161, 150),
         unselectedItemColor: Colors.grey,
       ),
     );
@@ -178,7 +183,8 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  void _showImageSourceDialog(BuildContext context, {bool isLearningPhoto = false}) {
+  void _showImageSourceDialog(BuildContext context,
+      {bool isLearningPhoto = false}) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -191,7 +197,8 @@ class _DashboardState extends State<Dashboard> {
               title: const Text('Camera'),
               onTap: () {
                 Navigator.pop(context);
-                _pickImage(ImageSource.camera, isLearningPhoto: isLearningPhoto);
+                _pickImage(ImageSource.camera,
+                    isLearningPhoto: isLearningPhoto);
               },
             ),
             ListTile(
@@ -199,7 +206,8 @@ class _DashboardState extends State<Dashboard> {
               title: const Text('Gallery'),
               onTap: () {
                 Navigator.pop(context);
-                _pickImage(ImageSource.gallery, isLearningPhoto: isLearningPhoto);
+                _pickImage(ImageSource.gallery,
+                    isLearningPhoto: isLearningPhoto);
               },
             ),
           ],
