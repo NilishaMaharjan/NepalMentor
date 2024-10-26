@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart'; // Import GetX for Snackbar
-import 'package:http/http.dart' as http; // Import HTTP package
-import 'dart:convert'; // Import for JSON encoding/decoding
+import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -12,6 +12,7 @@ class SignupPage extends StatefulWidget {
 
 class SignupPageState extends State<SignupPage> {
   final _formKey = GlobalKey<FormState>();
+
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -20,9 +21,56 @@ class SignupPageState extends State<SignupPage> {
   final TextEditingController institutionController = TextEditingController();
   final TextEditingController locationController = TextEditingController();
 
+  final FocusNode _firstNameFocus = FocusNode();
+  final FocusNode _lastNameFocus = FocusNode();
+  final FocusNode _emailFocus = FocusNode();
   final FocusNode _passwordFocus = FocusNode();
+  final FocusNode _ageFocus = FocusNode();
+  final FocusNode _institutionFocus = FocusNode();
+  final FocusNode _locationFocus = FocusNode();
+
   bool _obscurePassword = true;
-  bool _isRobotChecked = false; // Checkbox state
+  bool _isRobotChecked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _addFocusListeners();
+  }
+
+  void _addFocusListeners() {
+    _firstNameFocus.addListener(() => setState(() {}));
+    _lastNameFocus.addListener(() => setState(() {}));
+    _emailFocus.addListener(() => setState(() {}));
+    _passwordFocus.addListener(() => setState(() {}));
+    _ageFocus.addListener(() => setState(() {}));
+    _institutionFocus.addListener(() => setState(() {}));
+    _locationFocus.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _disposeControllersAndFocusNodes();
+    super.dispose();
+  }
+
+  void _disposeControllersAndFocusNodes() {
+    firstNameController.dispose();
+    lastNameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    ageController.dispose();
+    institutionController.dispose();
+    locationController.dispose();
+
+    _firstNameFocus.dispose();
+    _lastNameFocus.dispose();
+    _emailFocus.dispose();
+    _passwordFocus.dispose();
+    _ageFocus.dispose();
+    _institutionFocus.dispose();
+    _locationFocus.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,55 +86,52 @@ class SignupPageState extends State<SignupPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              buildTextFormField(
+              _buildTextField(
                 controller: firstNameController,
+                focusNode: _firstNameFocus,
                 label: 'First Name',
                 validatorMessage: 'Please enter your first name',
               ),
-              const SizedBox(height: 16.0),
-              buildTextFormField(
+              const SizedBox(height: 16),
+              _buildTextField(
                 controller: lastNameController,
+                focusNode: _lastNameFocus,
                 label: 'Last Name',
                 validatorMessage: 'Please enter your last name',
               ),
-              const SizedBox(height: 16.0),
-              buildTextFormField(
+              const SizedBox(height: 16),
+              _buildTextField(
                 controller: emailController,
+                focusNode: _emailFocus,
                 label: 'Email',
-                keyboardType: TextInputType.emailAddress,
                 validatorMessage: 'Please enter a valid email address',
-                customValidator: (value) {
-                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                      .hasMatch(value!)) {
-                    return 'Please enter a valid email address';
-                  }
-                  return null;
-                },
+                keyboardType: TextInputType.emailAddress,
               ),
-              const SizedBox(height: 16.0),
-              buildTextFormField(
+              const SizedBox(height: 16),
+              _buildTextField(
                 controller: ageController,
+                focusNode: _ageFocus,
                 label: 'Age',
                 validatorMessage: 'Please enter your age',
                 keyboardType: TextInputType.number,
               ),
-              const SizedBox(height: 16.0),
-              buildTextFormField(
+              const SizedBox(height: 16),
+              _buildTextField(
                 controller: institutionController,
+                focusNode: _institutionFocus,
                 label: 'Institution',
                 validatorMessage: 'Please enter your institution',
               ),
-              const SizedBox(height: 16.0),
-              buildTextFormField(
+              const SizedBox(height: 16),
+              _buildTextField(
                 controller: locationController,
+                focusNode: _locationFocus,
                 label: 'Location',
                 validatorMessage: 'Please enter your location',
               ),
-              const SizedBox(height: 16.0),
-              buildPasswordField(),
-              const SizedBox(height: 16.0),
-              buildPasswordRules(),
-              const SizedBox(height: 16.0),
+              const SizedBox(height: 16),
+              _buildPasswordField(),
+              const SizedBox(height: 16),
               CheckboxListTile(
                 title: const Text("I'm not a robot"),
                 value: _isRobotChecked,
@@ -95,30 +140,10 @@ class SignupPageState extends State<SignupPage> {
                     _isRobotChecked = value ?? false;
                   });
                 },
-                controlAffinity:
-                    ListTileControlAffinity.leading, // Checkbox on the left
+                controlAffinity: ListTileControlAffinity.leading,
               ),
-              const SizedBox(height: 24.0),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate() && _isRobotChecked) {
-                      registerMentee();
-                    } else if (!_isRobotChecked) {
-                      Get.snackbar(
-                          'Error', "Please confirm you're not a robot.");
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
-                  ),
-                  child: const Text(
-                    'Sign Up',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ),
+              const SizedBox(height: 24),
+              _buildSignupButton(),
             ],
           ),
         ),
@@ -126,64 +151,41 @@ class SignupPageState extends State<SignupPage> {
     );
   }
 
-  Future<void> registerMentee() async {
-    final response = await http.post(
-      Uri.parse(
-          'http://your_backend_url/mentee'), // Replace with your backend URL
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        'firstName': firstNameController.text,
-        'lastName': lastNameController.text,
-        'email': emailController.text,
-        'password': passwordController.text,
-        'age': ageController.text,
-        'institution': institutionController.text,
-        'location': locationController.text,
-      }),
-    );
-
-    if (response.statusCode == 201) {
-      Get.snackbar('Success',
-          'Mentee registered successfully. A verification email has been sent.');
-      // Navigate to the login page after successful registration
-      Get.offNamed(
-          '/login'); // Ensure you have a route defined for the login page
-    } else {
-      Get.snackbar(
-          'Error', json.decode(response.body)['msg'] ?? 'Registration failed');
-    }
-  }
-
-  Widget buildTextFormField({
+  Widget _buildTextField({
     required TextEditingController controller,
+    required FocusNode focusNode,
     required String label,
     required String validatorMessage,
     TextInputType keyboardType = TextInputType.text,
-    String? Function(String?)? customValidator,
   }) {
     return TextFormField(
       controller: controller,
-      cursorColor: Colors.teal,
-      style: const TextStyle(color: Colors.teal),
+      focusNode: focusNode,
       keyboardType: keyboardType,
+      cursorColor: Colors.teal,
+      style: TextStyle(
+        color: focusNode.hasFocus ? Colors.teal : Colors.black,
+      ),
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: TextStyle(
+          color: focusNode.hasFocus ? Colors.teal : Colors.grey,
+        ),
         border: const OutlineInputBorder(),
         focusedBorder: const OutlineInputBorder(
           borderSide: BorderSide(color: Colors.teal, width: 2.0),
         ),
       ),
-      validator: customValidator ??
-          (value) {
-            if (value == null || value.isEmpty) {
-              return validatorMessage;
-            }
-            return null;
-          },
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return validatorMessage;
+        }
+        return null;
+      },
     );
   }
 
-  Widget buildPasswordField() {
+  Widget _buildPasswordField() {
     return TextFormField(
       controller: passwordController,
       focusNode: _passwordFocus,
@@ -225,49 +227,61 @@ class SignupPageState extends State<SignupPage> {
         }
         return null;
       },
-      onTap: () {
-        setState(() {}); // Refresh UI to update text color
-      },
     );
   }
 
-  Widget buildPasswordRules() {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Password Requirements:',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.teal,
-          ),
+  Widget _buildSignupButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () {
+          if (_formKey.currentState!.validate() && _isRobotChecked) {
+            _registerMentee();
+          } else if (!_isRobotChecked) {
+            Get.snackbar('Error', "Please confirm you're not a robot.");
+          }
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.teal,
         ),
-        SizedBox(height: 8.0),
-        BulletPoint(text: 'Must be 8-16 characters long.'),
-        BulletPoint(text: 'Must be alphanumeric.'),
-      ],
+        child: const Text('Sign Up', style: TextStyle(color: Colors.white)),
+      ),
     );
   }
-}
 
-class BulletPoint extends StatelessWidget {
-  final String text;
+  Future<void> _registerMentee() async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://192.168.1.6:3000/api/register/mentee'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'firstName': firstNameController.text,
+          'lastName': lastNameController.text,
+          'email': emailController.text,
+          'password': passwordController.text,
+          'age': ageController.text,
+          'institution': institutionController.text,
+          'location': locationController.text,
+        }),
+      );
 
-  const BulletPoint({super.key, required this.text});
+      // Ensure the widget is still mounted
+      if (!mounted) return;
 
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('• ', style: TextStyle(color: Colors.teal)),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(color: Colors.black),
-          ),
-        ),
-      ],
-    );
+      if (response.statusCode == 201) {
+        // Successful registration
+        Get.snackbar('Success', 'Registered successfully! Check your email.');
+        Get.offNamed('/login');
+      } else {
+        // Handle error response
+        final errorMessage = jsonDecode(response.body)['msg'] ?? 'Registration failed. Please try again.';
+        Get.snackbar('Error', errorMessage);
+      }
+    } catch (e) {
+      // Handle exceptions
+      if (mounted) {
+        Get.snackbar('Error', 'An unexpected error occurred. Please try again later.');
+      }
+    }
   }
 }
