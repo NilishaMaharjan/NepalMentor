@@ -33,4 +33,3 @@ class MySplashState extends State<MySplash> {
     );
   }
 }
-

@@ -13,6 +13,7 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   File? _profileImage;
   File? _learningPhoto;
+  final Color themeColor = const Color.fromARGB(255, 47, 161, 150);
 
   Future<void> _pickImage(ImageSource source,
       {bool isLearningPhoto = false}) async {
@@ -32,6 +33,7 @@ class _DashboardState extends State<Dashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: themeColor,
         title: const Text('Learning Dashboard'),
       ),
       body: Column(
@@ -44,44 +46,46 @@ class _DashboardState extends State<Dashboard> {
                 GestureDetector(
                   onTap: () => _showImageSourceDialog(context),
                   child: Container(
-                    width: 60,
-                    height: 60,
+                    width: 70,
+                    height: 70,
                     decoration: BoxDecoration(
                       color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(35),
                     ),
                     child: _profileImage != null
                         ? ClipOval(
                             child: Image.file(
                               _profileImage!,
                               fit: BoxFit.cover,
-                              width: 60,
-                              height: 60,
+                              width: 70,
+                              height: 70,
                             ),
                           )
-                        : const Icon(
+                        : Icon(
                             Icons.camera_alt,
-                            size: 40,
-                            color: Colors.black54,
+                            size: 35,
+                            color: themeColor,
                           ),
                   ),
                 ),
-                const SizedBox(width: 10),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Welcome, Username!',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 5),
-                    Text(
-                      '"Learning is a treasure that will follow its \n  owner everywhere."',
-                      style:
-                          TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
-                    ),
-                  ],
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Welcome, Username!',
+                        style: TextStyle(
+                            fontSize: 22, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        '"Learning is a treasure that will follow its \n  owner everywhere."',
+                        style: TextStyle(
+                            fontSize: 14, fontStyle: FontStyle.italic),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -92,24 +96,24 @@ class _DashboardState extends State<Dashboard> {
               onTap: () =>
                   _showImageSourceDialog(context, isLearningPhoto: true),
               child: Container(
-                height: 150,
+                height: 160,
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: _learningPhoto != null
                     ? ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(10),
                         child: Image.file(
                           _learningPhoto!,
                           fit: BoxFit.cover,
                           width: double.infinity,
                         ),
                       )
-                    : const Center(
+                    : Center(
                         child: Text(
                           'Tap to upload a photo',
-                          style: TextStyle(fontSize: 16, color: Colors.black54),
+                          style: TextStyle(fontSize: 16, color: themeColor),
                         ),
                       ),
               ),
@@ -128,7 +132,7 @@ class _DashboardState extends State<Dashboard> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: GridView.count(
                 crossAxisCount: 3,
-                childAspectRatio: 2 / 2.5,
+                childAspectRatio: 1,
                 mainAxisSpacing: 10,
                 crossAxisSpacing: 10,
                 children: [
@@ -139,14 +143,14 @@ class _DashboardState extends State<Dashboard> {
                         builder: (context) => const PrimaryLevelPage(),
                       ),
                     ),
-                    child: _buildLevelCard('Primary'),
+                    child: _buildLevelCard('Primary', Icons.school),
                   ),
-                  _buildLevelCard('Secondary'),
-                  _buildLevelCard('Higher'),
-                  _buildLevelCard('Diploma'),
-                  _buildLevelCard('CTEVT'),
-                  _buildLevelCard('Bachelor'),
-                  _buildLevelCard('Master'),
+                  _buildLevelCard('Secondary', Icons.auto_stories),
+                  _buildLevelCard('Higher', Icons.book),
+                  _buildLevelCard('Diploma', Icons.menu_book),
+                  _buildLevelCard('CTEVT', Icons.library_books),
+                  _buildLevelCard('Bachelor', Icons.school_outlined),
+                  _buildLevelCard('Master', Icons.workspace_premium),
                 ],
               ),
             ),
@@ -164,21 +168,30 @@ class _DashboardState extends State<Dashboard> {
           BottomNavigationBarItem(
               icon: Icon(Icons.account_circle), label: 'Account'),
         ],
-        selectedItemColor: const Color.fromARGB(255, 47, 161, 150),
+        selectedItemColor: themeColor,
         unselectedItemColor: Colors.grey,
       ),
     );
   }
 
-  Widget _buildLevelCard(String level) {
+  Widget _buildLevelCard(String level, IconData icon) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      child: Center(
-        child: Text(
-          level,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            size: 30,
+            color: themeColor,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            level,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+        ],
       ),
     );
   }
@@ -193,7 +206,7 @@ class _DashboardState extends State<Dashboard> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.camera_alt),
+              leading: Icon(Icons.camera_alt, color: themeColor),
               title: const Text('Camera'),
               onTap: () {
                 Navigator.pop(context);
@@ -202,7 +215,7 @@ class _DashboardState extends State<Dashboard> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.photo),
+              leading: Icon(Icons.photo, color: themeColor),
               title: const Text('Gallery'),
               onTap: () {
                 Navigator.pop(context);
