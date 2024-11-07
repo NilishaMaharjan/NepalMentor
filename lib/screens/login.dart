@@ -29,7 +29,7 @@ class LoginScreenState extends State<LoginScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.1.6:3000/api/auth/login'), // My IP address
+        Uri.parse('http://10.0.2.2:3000/api/auth/login'), // My IP address
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': email,

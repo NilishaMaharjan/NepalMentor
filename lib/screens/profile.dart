@@ -95,19 +95,25 @@ class ProfileDetails extends StatelessWidget {
             children: [
               Text(
                 'Skills: ',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold), // Bold heading
+                style: TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.bold), // Bold heading
               ),
               // No line break after heading
             ],
           ),
           SizedBox(height: 5),
-          SkillChips(skills: ['Algebra', 'Calculus', 'Geometry']), // Updated to use SkillChips widget
+          SkillChips(skills: [
+            'Algebra',
+            'Calculus',
+            'Geometry'
+          ]), // Updated to use SkillChips widget
           SizedBox(height: 10),
           Divider(thickness: 1), // Fine line separator
           SizedBox(height: 10),
           Text(
             'Experience: ',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold), // Bold heading
+            style: TextStyle(
+                fontSize: 18, fontWeight: FontWeight.bold), // Bold heading
           ),
           Text(
             '5+ years in Advanced Mathematics', // Normal text
@@ -118,7 +124,8 @@ class ProfileDetails extends StatelessWidget {
           SizedBox(height: 10),
           Text(
             'Availability: ',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold), // Bold heading
+            style: TextStyle(
+                fontSize: 18, fontWeight: FontWeight.bold), // Bold heading
           ),
           Text(
             'Online / Home Tuition Available', // Normal text
@@ -149,8 +156,10 @@ class SkillChips extends StatelessWidget {
               fontSize: 16, // Slightly larger font size
             ),
           ),
-          backgroundColor: Colors.grey.shade50, // Keep the existing color for chips
-          padding: const EdgeInsets.symmetric(horizontal: 12.0), // Horizontal padding for chip
+          backgroundColor:
+              Colors.grey.shade50, // Keep the existing color for chips
+          padding: const EdgeInsets.symmetric(
+              horizontal: 12.0), // Horizontal padding for chip
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30), // Oval shape
           ),
@@ -192,20 +201,23 @@ class TimeSchedule extends StatelessWidget {
             },
             children: [
               TableRow(
-                decoration: BoxDecoration(color: Colors.teal.shade100), // Header background color
+                decoration: BoxDecoration(
+                    color: Colors.teal.shade100), // Header background color
                 children: const [
                   Padding(
                     padding: EdgeInsets.all(8.0),
                     child: Text(
                       'Time Slot',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
                   Padding(
                     padding: EdgeInsets.all(8.0),
                     child: Text(
                       'Status',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],

@@ -11,6 +11,7 @@ class MentorDashboard extends StatefulWidget {
 
 class _MentorDashboardState extends State<MentorDashboard> {
   File? _profileImage;
+  int _selectedIndex = 0;
 
   Future<void> _pickProfileImage(ImageSource source) async {
     final pickedImage = await ImagePicker().pickImage(source: source);
@@ -21,13 +22,60 @@ class _MentorDashboardState extends State<MentorDashboard> {
     }
   }
 
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mentor Dashboard'),
+        title: Text(
+          _selectedIndex == 0
+              ? 'Home'
+              : _selectedIndex == 1
+                  ? 'Requests'
+                  : _selectedIndex == 2
+                      ? 'Profile'
+                      : '',
+        ),
+        backgroundColor: Colors.teal,
       ),
-      body: Column(
+      body: _selectedIndex == 0
+          ? _buildHomeScreen()
+          : _selectedIndex == 1
+              ? _buildMenteeRequests()
+              : _selectedIndex == 2
+                  ? _buildProfile()
+                  : Container(),
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.schedule),
+            label: 'Requests',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_circle),
+            label: 'Profile',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        selectedItemColor: Colors.teal,
+        unselectedItemColor: Colors.grey,
+      ),
+    );
+  }
+
+  Widget _buildHomeScreen() {
+    return SingleChildScrollView(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
@@ -36,27 +84,19 @@ class _MentorDashboardState extends State<MentorDashboard> {
               children: [
                 GestureDetector(
                   onTap: () => _showImageSourceDialog(context),
-                  child: Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    child: _profileImage != null
-                        ? ClipOval(
-                            child: Image.file(
-                              _profileImage!,
-                              fit: BoxFit.cover,
-                              width: 60,
-                              height: 60,
-                            ),
-                          )
-                        : const Icon(
+                  child: CircleAvatar(
+                    radius: 30,
+                    backgroundImage: _profileImage != null
+                        ? FileImage(_profileImage!)
+                        : null,
+                    backgroundColor: Colors.grey[300],
+                    child: _profileImage == null
+                        ? const Icon(
                             Icons.camera_alt,
-                            size: 40,
+                            size: 30,
                             color: Colors.black54,
-                          ),
+                          )
+                        : null,
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -70,7 +110,7 @@ class _MentorDashboardState extends State<MentorDashboard> {
                     ),
                     SizedBox(height: 5),
                     Text(
-                      'Review and manage mentee requests.',
+                      'Manage your sessions effectively.',
                       style:
                           TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
                     ),
@@ -79,40 +119,131 @@ class _MentorDashboardState extends State<MentorDashboard> {
               ],
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              'Mentee Requests',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: const Text(
+              'My Sessions',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: ListView(
-                children: [
-                  _buildMenteeRequestCard('John Doe', 'Beginner level learner'),
-                  _buildMenteeRequestCard(
-                      'Jane Smith', 'Intermediate skills in Java'),
-                  _buildMenteeRequestCard(
-                      'Alex Lee', 'Python and Data Science enthusiast'),
-                ],
-              ),
+          _buildSessionCard('Session 1', 'Mathematics - Algebra', '10:00 AM'),
+          _buildSessionCard(
+              'Session 2', 'Physics - Quantum Mechanics', '12:00 PM'),
+          _buildSessionCard(
+              'Session 3', 'Chemistry - Organic Chemistry', '02:00 PM'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSessionCard(String session, String subject, String time) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 3,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  session,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  time,
+                  style: const TextStyle(fontSize: 14, color: Colors.black54),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              subject,
+              style: const TextStyle(fontSize: 14, color: Colors.black87),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenteeRequests() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+            'Mentee Requests',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+        ),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: ListView(
+              children: [
+                _buildMenteeRequestCard('John Doe', 'Beginner level learner'),
+                _buildMenteeRequestCard('Jane Smith', 'Intermediate in Java'),
+                _buildMenteeRequestCard(
+                    'Alex Lee', 'Python and Data Science enthusiast'),
+              ],
             ),
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProfile() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Account Management',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 20),
+          _buildProfileOption(
+              Icons.person, 'My Profile'), // New option at the top
+          _buildProfileOption(Icons.calendar_today, 'Manage Sessions'),
+          _buildProfileOption(Icons.people, 'Manage Mentees'),
+          _buildProfileOption(Icons.analytics, 'View Analytics'),
+          _buildProfileOption(Icons.payment, 'Payment History'),
+          _buildProfileOption(
+              Icons.settings, 'Settings'), // Settings moved down
+          const SizedBox(height: 20),
+          _buildLogoutButton(), // Logout button at the bottom
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.schedule), label: 'Requests'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.account_circle), label: 'Profile'),
-        ],
-        selectedItemColor: const Color.fromARGB(255, 47, 161, 150),
-        unselectedItemColor: Colors.grey,
-      ),
+    );
+  }
+
+  Widget _buildLogoutButton() {
+    return ListTile(
+      leading: const Icon(Icons.logout, color: Colors.red),
+      title: const Text('Logout', style: TextStyle(color: Colors.red)),
+      onTap: () {
+        // Navigate to the login page
+        Navigator.pushReplacementNamed(
+            context, '/login'); // Adjust this route based on your app's routing
+      },
+    );
+  }
+
+  Widget _buildProfileOption(IconData icon, String label) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.teal),
+      title: Text(label),
+      onTap: () {
+        // Add functionality for each option
+      },
     );
   }
 

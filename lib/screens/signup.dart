@@ -252,7 +252,7 @@ class SignupPageState extends State<SignupPage> {
   Future<void> _registerMentee() async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.1.6:3000/api/register/mentee'),
+        Uri.parse('http://192.168.1.13:3000/api/register/mentee'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'firstName': firstNameController.text,
@@ -274,13 +274,15 @@ class SignupPageState extends State<SignupPage> {
         Get.offNamed('/login');
       } else {
         // Handle error response
-        final errorMessage = jsonDecode(response.body)['msg'] ?? 'Registration failed. Please try again.';
+        final errorMessage = jsonDecode(response.body)['msg'] ??
+            'Registration failed. Please try again.';
         Get.snackbar('Error', errorMessage);
       }
     } catch (e) {
       // Handle exceptions
       if (mounted) {
-        Get.snackbar('Error', 'An unexpected error occurred. Please try again later.');
+        Get.snackbar(
+            'Error', 'An unexpected error occurred. Please try again later.');
       }
     }
   }
