@@ -1,8 +1,7 @@
-
-import 'dart:io';  // For File handling
+import 'dart:io'; // For File handling
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';  // For image selection
-import 'mentoradditionalinfo.dart';  // Import the next screen
+import 'package:image_picker/image_picker.dart'; // For image selection
+import 'mentoradditionalinfo.dart'; // Import the next screen
 
 class MentorRegistration extends StatefulWidget {
   const MentorRegistration({super.key});
@@ -23,8 +22,8 @@ class MentorApplicationScreenState extends State<MentorRegistration> {
   final TextEditingController jobTitleController = TextEditingController();
   final TextEditingController companyController = TextEditingController();
 
-  File? _selectedImage;  // To store the selected image
-  final ImagePicker _picker = ImagePicker();  // Initialize ImagePicker
+  File? _selectedImage; // To store the selected image
+  final ImagePicker _picker = ImagePicker(); // Initialize ImagePicker
   bool _obscurePassword = true; // Password visibility toggle
 
   // Function to pick an image from gallery or camera
@@ -74,10 +73,12 @@ class MentorApplicationScreenState extends State<MentorRegistration> {
                     child: CircleAvatar(
                       radius: 60,
                       backgroundColor: Colors.grey[300],
-                      backgroundImage:
-                          _selectedImage != null ? FileImage(_selectedImage!) : null,
+                      backgroundImage: _selectedImage != null
+                          ? FileImage(_selectedImage!)
+                          : null,
                       child: _selectedImage == null
-                          ? const Icon(Icons.add_a_photo, size: 50, color: Colors.teal)
+                          ? const Icon(Icons.add_a_photo,
+                              size: 50, color: Colors.teal)
                           : null,
                     ),
                   ),
@@ -147,7 +148,8 @@ class MentorApplicationScreenState extends State<MentorRegistration> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email';
-                    } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                    } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
+                        .hasMatch(value)) {
                       return 'Please enter a valid email address';
                     }
                     return null;
@@ -171,7 +173,9 @@ class MentorApplicationScreenState extends State<MentorRegistration> {
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                         color: Colors.teal,
                       ),
                       onPressed: () {

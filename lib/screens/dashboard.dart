@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'primary.dart';
+import 'secondary.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -14,6 +15,8 @@ class _DashboardState extends State<Dashboard> {
   File? _profileImage;
   File? _learningPhoto;
   final Color themeColor = const Color.fromARGB(255, 47, 161, 150);
+
+  int _selectedIndex = 0; // Tracks the selected index for BottomNavigationBar
 
   Future<void> _pickImage(ImageSource source,
       {bool isLearningPhoto = false}) async {
@@ -34,130 +37,44 @@ class _DashboardState extends State<Dashboard> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: themeColor,
-        title: const Text('Learning Dashboard'),
+        title: Text(
+          _selectedIndex == 0
+              ? 'Learning Dashboard'
+              : _selectedIndex == 1
+                  ? 'Search'
+                  : _selectedIndex == 2
+                      ? 'My Learning'
+                      : _selectedIndex == 3
+                          ? 'Notifications'
+                          : 'Profile', // Title updates based on the selected tab
+        ),
+        leading: _selectedIndex == 1
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  setState(() {
+                    _selectedIndex = 0; // Go back to the main dashboard
+                  });
+                },
+              )
+            : null, // No leading icon on the main page
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: () => _showImageSourceDialog(context),
-                  child: Container(
-                    width: 70,
-                    height: 70,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(35),
-                    ),
-                    child: _profileImage != null
-                        ? ClipOval(
-                            child: Image.file(
-                              _profileImage!,
-                              fit: BoxFit.cover,
-                              width: 70,
-                              height: 70,
-                            ),
-                          )
-                        : Icon(
-                            Icons.camera_alt,
-                            size: 35,
-                            color: themeColor,
-                          ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Welcome, Username!',
-                        style: TextStyle(
-                            fontSize: 22, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        '"Learning is a treasure that will follow its \n  owner everywhere."',
-                        style: TextStyle(
-                            fontSize: 14, fontStyle: FontStyle.italic),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: GestureDetector(
-              onTap: () =>
-                  _showImageSourceDialog(context, isLearningPhoto: true),
-              child: Container(
-                height: 160,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: _learningPhoto != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Image.file(
-                          _learningPhoto!,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                        ),
-                      )
-                    : Center(
-                        child: Text(
-                          'Tap to upload a photo',
-                          style: TextStyle(fontSize: 16, color: themeColor),
-                        ),
-                      ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              'Choose your level',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: GridView.count(
-                crossAxisCount: 3,
-                childAspectRatio: 1,
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PrimaryLevelPage(),
-                      ),
-                    ),
-                    child: _buildLevelCard('Primary', Icons.school),
-                  ),
-                  _buildLevelCard('Secondary', Icons.auto_stories),
-                  _buildLevelCard('Higher', Icons.book),
-                  _buildLevelCard('Diploma', Icons.menu_book),
-                  _buildLevelCard('CTEVT', Icons.library_books),
-                  _buildLevelCard('Bachelor', Icons.school_outlined),
-                  _buildLevelCard('Master', Icons.workspace_premium),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+      body: _selectedIndex == 0
+          ? _buildLearningDashboard()
+          : _selectedIndex == 1
+              ? _buildSearch()
+              : _selectedIndex == 2
+                  ? _buildBlankPage() // My Learning blank for now
+                  : _selectedIndex == 3
+                      ? _buildBlankPage() // Notifications blank for now
+                      : _buildProfile(),
       bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
@@ -166,11 +83,212 @@ class _DashboardState extends State<Dashboard> {
           BottomNavigationBarItem(
               icon: Icon(Icons.notifications), label: 'Notifications'),
           BottomNavigationBarItem(
-              icon: Icon(Icons.account_circle), label: 'Account'),
+              icon: Icon(Icons.account_circle), label: 'Profile'),
         ],
         selectedItemColor: themeColor,
         unselectedItemColor: Colors.grey,
       ),
+    );
+  }
+
+  Widget _buildLearningDashboard() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: () => _showImageSourceDialog(context),
+                child: Container(
+                  width: 70,
+                  height: 70,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(35),
+                  ),
+                  child: _profileImage != null
+                      ? ClipOval(
+                          child: Image.file(
+                            _profileImage!,
+                            fit: BoxFit.cover,
+                            width: 70,
+                            height: 70,
+                          ),
+                        )
+                      : Icon(
+                          Icons.camera_alt,
+                          size: 35,
+                          color: themeColor,
+                        ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Welcome, Username!',
+                      style:
+                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      '"Learning is a treasure that will follow its \n  owner everywhere."',
+                      style:
+                          TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: GestureDetector(
+            onTap: () => _showImageSourceDialog(context, isLearningPhoto: true),
+            child: Container(
+              height: 160,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: _learningPhoto != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.file(
+                        _learningPhoto!,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                      ),
+                    )
+                  : Center(
+                      child: Text(
+                        'Tap to upload a photo',
+                        style: TextStyle(fontSize: 16, color: themeColor),
+                      ),
+                    ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+            'Choose your level',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: GridView.count(
+              crossAxisCount: 3,
+              childAspectRatio: 1,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PrimaryLevelPage(),
+                    ),
+                  ),
+                  child: _buildLevelCard('Primary', Icons.school),
+                ),
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SecondaryLevelPage(),
+                    ),
+                  ),
+                  child: _buildLevelCard('Secondary', Icons.auto_stories),
+                ),
+                _buildLevelCard('Diploma', Icons.menu_book),
+                _buildLevelCard('CTEVT', Icons.library_books),
+                _buildLevelCard('Bachelor', Icons.school_outlined),
+                _buildLevelCard('Masters', Icons.workspace_premium),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearch() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          TextField(
+            decoration: InputDecoration(
+              hintText: 'Search...',
+              prefixIcon: Icon(Icons.search, color: themeColor),
+              border: const OutlineInputBorder(),
+            ),
+            autofocus: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBlankPage() {
+    return Center(
+      child: Text(
+        'This page is under development.',
+        style: TextStyle(fontSize: 18, color: themeColor),
+      ),
+    );
+  }
+
+  Widget _buildProfile() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Account Management',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 20),
+          _buildProfileOption(Icons.person, 'My Profile'), // View/Edit Profile
+          _buildProfileOption(
+              Icons.history, 'Session History'), // View past sessions
+          _buildProfileOption(
+              Icons.star_border, 'My Mentors'), // View mentees' mentors
+          _buildProfileOption(Icons.payment,
+              'Payment History'), // View any payment or subscription history
+          _buildProfileOption(Icons.settings, 'Settings'), // App Settings
+          const SizedBox(height: 20),
+          _buildLogoutButton(), // Logout
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLogoutButton() {
+    return ListTile(
+      leading: const Icon(Icons.logout, color: Colors.red),
+      title: const Text('Logout', style: TextStyle(color: Colors.red)),
+      onTap: () {
+        Navigator.pushReplacementNamed(context, '/login');
+      },
+    );
+  }
+
+  Widget _buildProfileOption(IconData icon, String label) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.teal),
+      title: Text(label),
+      onTap: () {},
     );
   }
 
@@ -181,11 +299,7 @@ class _DashboardState extends State<Dashboard> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            icon,
-            size: 30,
-            color: themeColor,
-          ),
+          Icon(icon, size: 30, color: themeColor),
           const SizedBox(height: 10),
           Text(
             level,

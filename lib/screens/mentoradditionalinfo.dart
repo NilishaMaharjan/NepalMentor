@@ -56,16 +56,16 @@ class MentorAdditionalInfoState extends State<MentorAdditionalInfo> {
                     alignLabelWithHint: true,
                     contentPadding:
                         EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
-                    border:  OutlineInputBorder(),
-                    focusedBorder:  OutlineInputBorder(
+                    border: OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.teal, width: 2.0),
                     ),
                     helperMaxLines: 2,
-                    floatingLabelStyle:  TextStyle(
+                    floatingLabelStyle: TextStyle(
                       color: Colors.teal,
                       fontWeight: FontWeight.bold,
                     ),
-                    helperStyle:  TextStyle(
+                    helperStyle: TextStyle(
                       height: 1.5,
                       color: Colors.black54,
                     ),
@@ -103,8 +103,14 @@ class MentorAdditionalInfoState extends State<MentorAdditionalInfo> {
           fontWeight: FontWeight.bold,
         ),
       ),
-      items: <String>['Please Select', 'Primary level', 'Secondary level', 'Diploma', 'Bachelors', 'Masters']
-          .map<DropdownMenuItem<String>>((String value) {
+      items: <String>[
+        'Please Select',
+        'Primary level',
+        'Secondary level',
+        'Diploma',
+        'Bachelors',
+        'Masters'
+      ].map<DropdownMenuItem<String>>((String value) {
         return DropdownMenuItem<String>(
           value: value,
           child: Text(value),
@@ -133,7 +139,8 @@ class MentorAdditionalInfoState extends State<MentorAdditionalInfo> {
         labelText: label,
         helperText: helperText,
         alignLabelWithHint: true,
-        contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
         border: const OutlineInputBorder(),
         focusedBorder: const OutlineInputBorder(
           borderSide: BorderSide(color: Colors.teal, width: 2.0),
