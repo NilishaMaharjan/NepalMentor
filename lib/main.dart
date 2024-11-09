@@ -41,7 +41,19 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/mentordashboard', page: () => const MentorDashboard()),
         GetPage(name: '/primarylevel', page: () => const PrimaryLevelPage()),
         GetPage(name: '/grade7maths', page: () => const MathsPage()),
-        GetPage(name: '/mentorprofile', page: () => const MentorProfilePage()),
+       GetPage(
+      name: '/mentorprofile',
+      page: () {
+       // Get the 'userId' from the parameters or provide a default value
+      final userId = Get.parameters['mentorId'] ?? '';  // default to empty string if not found
+      return MentorProfilePage(userId: userId);  // Pass 'userId' here
+  },
+),
+
+
+
+
+
         GetPage(
           name: '/reset-password/:token',
           page: () {
