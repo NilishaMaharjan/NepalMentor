@@ -51,7 +51,11 @@ class _MentorDashboardState extends State<MentorDashboard> {
                   ? _buildProfile()
                   : Container(),
       bottomNavigationBar: BottomNavigationBar(
+<<<<<<< HEAD
         items: const [
+=======
+        items: const[
+>>>>>>> 8bdcf8f6a494cfd541257ac92b23ef22d5155917
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
@@ -119,9 +123,15 @@ class _MentorDashboardState extends State<MentorDashboard> {
               ],
             ),
           ),
+<<<<<<< HEAD
           const Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
+=======
+          const  Padding(
+            padding:EdgeInsets.all(16.0),
+            child:Text(
+>>>>>>> 8bdcf8f6a494cfd541257ac92b23ef22d5155917
               'My Sessions',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),

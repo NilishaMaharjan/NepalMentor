@@ -1,256 +1,269 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-class MentorProfilePage extends StatelessWidget {
-  const MentorProfilePage({super.key});
+class MentorProfilePage extends StatefulWidget {
+  final String userId;
+
+  const MentorProfilePage({super.key, required this.userId});
+
+  @override
+  State<MentorProfilePage> createState() => _MentorProfilePageState();
+}
+
+class _MentorProfilePageState extends State<MentorProfilePage> {
+  late Future<Map<String, dynamic>> mentorData;
+  late Future<Map<String, dynamic>?> availabilityData;
+
+  @override
+  void initState() {
+    super.initState();
+    mentorData = fetchMentorData(widget.userId);
+    availabilityData = fetchAvailabilityData(widget.userId); // Fetch availability data
+  }
+
+  // Function to fetch mentor data
+  Future<Map<String, dynamic>> fetchMentorData(String userId) async {
+    final response = await http.get(
+      Uri.parse('http://192.168.1.15:3000/api/mentors/$userId'),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load mentor data');
+    }
+  }
+
+  // Function to fetch availability data (can be null if not available)
+  Future<Map<String, dynamic>?> fetchAvailabilityData(String userId) async {
+    final response = await http.get(
+      Uri.parse('http://192.168.1.15:3000/api/availability/$userId'),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      return null; // Return null if no availability data
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mentor Profile'),
-        backgroundColor: Colors.teal, // Keep original teal color
+        backgroundColor: Colors.teal,
       ),
-      body: const SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ProfileHeader(),
-            SizedBox(height: 20),
-            ProfileDetails(), // Updated to include skill chips
-            SizedBox(height: 20),
-            TimeSchedule(),
-          ],
-        ),
-      ),
-    );
-  }
-}
+      body: FutureBuilder<List<dynamic>>(
+        // Await both mentor and availability data and handle them as a list
+        future: Future.wait([mentorData, availabilityData]),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data == null) {
+            return const Center(child: Text('No data available'));
+          }
 
-class ProfileHeader extends StatelessWidget {
-  const ProfileHeader({super.key});
+          // Snapshot will now contain a List of the data
+          final mentor = snapshot.data![0]; // mentor data
+          final availability = snapshot.data![1]; // availability data (can be null)
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300), // Add border
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: const Row(
-        children: [
-          CircleAvatar(
-            radius: 40,
-            backgroundImage: NetworkImage(
-              'https://example.com/profile-image.jpg', // Replace with actual image URL
-            ),
-          ),
-          SizedBox(width: 16),
-          Expanded(
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(20.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Shubha Acharya', // Replace with mentor's name
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'Maths Specialist with 5 years experience', // Replace with mentor's role
-                  style: TextStyle(fontSize: 16, color: Colors.black),
-                  maxLines: 2, // Limit to 2 lines
-                  overflow: TextOverflow.ellipsis, // Add ellipsis if overflow
-                ),
+                // Profile Image and Name
                 Row(
                   children: [
-                    Icon(Icons.star, color: Colors.amber, size: 20),
-                    SizedBox(width: 4),
-                    Text('4.9 (20 reviews)'), // Replace with mentor's rating
+                    const CircleAvatar(
+                      radius: 50,
+                      backgroundImage: AssetImage('assets/default.png'),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${mentor['firstName']} ${mentor['lastName'] ?? ''}',
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.teal,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            mentor['jobTitle'] ?? 'No title',
+                            style: const TextStyle(
+                                fontSize: 18, color: Colors.black),
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              const Icon(Icons.star, color: Colors.amber),
+                              Text(
+                                ' ${mentor['rating'] ?? 'N/A'} (${mentor['reviewsCount'] ?? '0'} reviews)',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+                const SizedBox(height: 24),
 
-class ProfileDetails extends StatelessWidget {
-  const ProfileDetails({super.key});
+                // 1. Skills Section
+                const Text(
+                  'Skills:',
+                  style: TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: (mentor['skills'] as List<dynamic>? ?? []).map((skill) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 20,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 6,
+                            offset: Offset(2, 2),
+                          ),
+                        ],
+                        border: Border.all(
+                          color: Colors.teal,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Text(
+                        skill,
+                        style: const TextStyle(
+                          color: Colors.teal,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 24),
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade200), // Add border
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                'Skills: ',
-                style: TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold), // Bold heading
-              ),
-              // No line break after heading
-            ],
-          ),
-          SizedBox(height: 5),
-          SkillChips(skills: [
-            'Algebra',
-            'Calculus',
-            'Geometry'
-          ]), // Updated to use SkillChips widget
-          SizedBox(height: 10),
-          Divider(thickness: 1), // Fine line separator
-          SizedBox(height: 10),
-          Text(
-            'Experience: ',
-            style: TextStyle(
-                fontSize: 18, fontWeight: FontWeight.bold), // Bold heading
-          ),
-          Text(
-            '5+ years in Advanced Mathematics', // Normal text
-            style: TextStyle(fontSize: 16), // Normal text
-          ),
-          SizedBox(height: 10),
-          Divider(thickness: 1), // Fine line separator
-          SizedBox(height: 10),
-          Text(
-            'Availability: ',
-            style: TextStyle(
-                fontSize: 18, fontWeight: FontWeight.bold), // Bold heading
-          ),
-          Text(
-            'Online / Home Tuition Available', // Normal text
-            style: TextStyle(fontSize: 16), // Normal text
-          ),
-        ],
-      ),
-    );
-  }
-}
+                // 2. Qualifications Section
+                if (mentor['qualifications'] != null) ...[
+                  const Text(
+                    'Qualifications:',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    mentor['qualifications'],
+                    style: const TextStyle(fontSize: 16, height: 1.6),
+                  ),
+                  const SizedBox(height: 24),
+                ],
 
-// New Widget for displaying skills as chips
-class SkillChips extends StatelessWidget {
-  final List<String> skills;
+                // 3. Bio Section
+                if (mentor['bio'] != null) ...[
+                  const Text(
+                    'Bio:',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    mentor['bio'],
+                    style: const TextStyle(fontSize: 16, height: 1.6),
+                  ),
+                  const SizedBox(height: 24),
+                ],
 
-  const SkillChips({super.key, required this.skills});
+                // 4. Location Section
+                if (mentor['location'] != null) ...[
+                  const Text(
+                    'Location:',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    mentor['location'],
+                    style: const TextStyle(fontSize: 16, height: 1.6),
+                  ),
+                  const SizedBox(height: 24),
+                ],
 
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8.0, // Spacing between chips
-      children: skills.map((skill) {
-        return Chip(
-          label: Text(
-            skill,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold, // Bold text for skill names
-              fontSize: 16, // Slightly larger font size
-            ),
-          ),
-          backgroundColor:
-              Colors.grey.shade50, // Keep the existing color for chips
-          padding: const EdgeInsets.symmetric(
-              horizontal: 12.0), // Horizontal padding for chip
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30), // Oval shape
-          ),
-        );
-      }).toList(),
-    );
-  }
-}
-
-class TimeSchedule extends StatelessWidget {
-  const TimeSchedule({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300), // Add border
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Time Schedule:',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 10),
-          // Using a Table to create a structured layout with visible lines
-          Table(
-            border: TableBorder.all(
-              color: Colors.grey.shade300,
-              style: BorderStyle.solid,
-              width: 1,
-            ),
-            columnWidths: const {
-              0: FractionColumnWidth(0.6), // First column takes 60% of width
-              1: FractionColumnWidth(0.4), // Second column takes 40% of width
-            },
-            children: [
-              TableRow(
-                decoration: BoxDecoration(
-                    color: Colors.teal.shade100), // Header background color
-                children: const [
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text(
-                      'Time Slot',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                // 5. Timetable Section (Presented as a Table)
+                if (availability != null && availability['slots'] != null) ...[
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Timetable:',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.teal,
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text(
-                      'Status',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  const SizedBox(height: 6),
+                  Table(
+                    children: [
+                      // Display mentor's slots from the availability data
+                      for (int index = 0; index < availability['slots'].length; index++)
+                        TableRow(
+                          children: [
+                            TableCell(
+                              child: Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: Text(
+                                  availability['slots'][index], // Display the time slot
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                              ),
+                            ),
+                            TableCell(
+                              child: Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: ElevatedButton(
+                                  onPressed: null, // Button is disabled (read-only)
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.grey, // Disabled button color
+                                  ),
+                                  child: const Text('Available'),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ] else if (availability == null) ...[
+                  // If no availability data
+                  const SizedBox(height: 24),
+                  const Text(
+                    'No availability information.',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.teal,
                     ),
                   ),
                 ],
-              ),
-              _buildTableRow('6:00 PM - 8:00 PM', 'Available'),
-              _buildTableRow('8:00 PM - 10:00 PM', 'Available'),
-              _buildTableRow('10:00 AM - 12:00 PM', 'Available'),
-              _buildTableRow('1:00 PM - 3:00 PM', 'Available'),
-            ],
-          ),
-        ],
+              ],
+            ),
+          );
+        },
       ),
-    );
-  }
-
-  TableRow _buildTableRow(String time, String availability) {
-    return TableRow(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(
-            time,
-            style: const TextStyle(fontSize: 16),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(
-            availability,
-            style: const TextStyle(fontSize: 16),
-          ),
-        ),
-      ],
     );
   }
 }

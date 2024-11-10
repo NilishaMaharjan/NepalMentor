@@ -1,51 +1,94 @@
 import 'package:flutter/material.dart';
-import 'profile.dart'; // Import the profile.dart page
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'profile.dart'; // Import Mentor Profile Page
 
-class MathsPage extends StatelessWidget {
+class MathsPage extends StatefulWidget {
   const MathsPage({super.key});
+
+  @override
+  MathsPageState createState() => MathsPageState();
+}
+
+class MathsPageState extends State<MathsPage> {
+  List<dynamic> mentors = [];
+
+  Future<void> fetchMentors(String category, String subject) async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+            'http://192.168.1.15:3000/api/mentors?category=$category&subjects=$subject'),
+      );
+
+      if (response.statusCode == 200) {
+        if (mounted) {
+          setState(() {
+            mentors = json.decode(response.body);
+          });
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to load mentors. Please try again later.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('An error occurred. Please try again later.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchMentors('Primary', 'Math');
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mentors'),
-        backgroundColor: Colors.teal, // Header color changed to teal
+        backgroundColor: Colors.teal,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(8.0),
-        children: const [
-          MentorCard(
-            name: 'Shubha Acharya',
-            role: 'Maths Specialist with 5 years experience',
-            rating: 4.9,
-            reviews: 20,
-            skills: ['Algebra', 'Calculus', 'Geometry'],
-            price: 3000,
-            imageUrl: 'assets/shubha.png',
-            isAvailable: true,
-          ),
-          MentorCard(
-            name: 'Nilisha Maharjan',
-            role: 'Maths Teacher for Grades 7-10',
-            rating: 4.9,
-            reviews: 12,
-            skills: ['Trigonometry', 'Statistics', 'Arithmetic'],
-            price: 2600,
-            imageUrl: 'assets/nili.png',
-            isAvailable: false,
-          ),
-          MentorCard(
-            name: 'Sanjeeta Acharya',
-            role: 'Maths Teacher for Grades 7-10',
-            rating: 4.8,
-            reviews: 15,
-            skills: ['Probability', 'Graphs', 'Functions'],
-            price: 2500,
-            imageUrl: 'assets/sanjeeta.png',
-            isAvailable: false,
-          ),
-        ],
-      ),
+      body: mentors.isEmpty
+          ? const Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              itemCount: mentors.length,
+              itemBuilder: (context, index) {
+                return MentorCard(
+                  name: '${mentors[index]['firstName']} ${mentors[index]['lastName'] ?? 'No last name'}',
+                  role: mentors[index]['jobTitle'] ?? 'No role',
+                  skills: List<String>.from(mentors[index]['subjects'] ?? []),
+                  price: 3000,
+                  rating: mentors[index]['rating'] ?? 'N/A', // Rating
+                  reviewsCount: mentors[index]['reviewsCount'] ?? '0', // Reviews count
+                  imageUrl: 'assets/default.png',
+                  onViewProfile: () {
+                    // Pass the mentor's userId dynamically when navigating to the profile page
+                    String mentorId = mentors[index]['user']?['_id'] ?? mentors[index]['_id'];
+                    print('Mentor data: ${mentors[index]}');
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MentorProfilePage(userId: mentorId), // Pass 'userId' here
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
@@ -67,50 +110,101 @@ class MathsPage extends StatelessWidget {
 class MentorCard extends StatelessWidget {
   final String name;
   final String role;
-  final double rating;
-  final int reviews;
   final List<String> skills;
   final int price;
+  final String rating; // Added rating field
+  final String reviewsCount; // Added reviewsCount field
   final String imageUrl;
-  final bool isAvailable;
+  final VoidCallback onViewProfile;
 
   const MentorCard({
     super.key,
     required this.name,
     required this.role,
-    required this.rating,
-    required this.reviews,
     required this.skills,
     required this.price,
+    required this.rating,
+    required this.reviewsCount,
     required this.imageUrl,
-    required this.isAvailable,
+    required this.onViewProfile,
   });
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 5, // Added elevation for a shadow effect
+      elevation: 5,
+      margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15), // Rounded corners
+        borderRadius: BorderRadius.circular(15),
       ),
-      margin: const EdgeInsets.symmetric(vertical: 10.0),
-      child: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: Container(
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 2,
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Column(
               children: [
+                const SizedBox(height: 8),
                 CircleAvatar(
-                  radius: 40, // Kept the radius for visual preference
+                  radius: 40,
                   backgroundImage: AssetImage(imageUrl),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              ],
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    role,
+                    style: const TextStyle(
+                      color: Colors.black54,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    children: skills.map((skill) {
+                      return Chip(
+                        label: Text(
+                          skill,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, color: Colors.black87),
+                        ),
+                        backgroundColor: Colors.grey.shade100,
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 10),
+                  // Display the rating and review count
+                  Row(
                     children: [
+                      const Icon(Icons.star, color: Colors.amber),
                       Text(
+<<<<<<< HEAD
                         name,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
@@ -172,35 +266,44 @@ class MentorCard extends StatelessWidget {
                           'View Profile',
                           style: TextStyle(color: Colors.white),
                         ),
+=======
+                        ' $rating ($reviewsCount reviews)',
+                        style: const TextStyle(fontSize: 16),
+>>>>>>> 8bdcf8f6a494cfd541257ac92b23ef22d5155917
                       ),
                     ],
                   ),
-                ),
-              ],
-            ),
-          ),
-          Positioned(
-            top: 10,
-            right: 10,
-            child: Row(
-              children: [
-                Icon(
-                  Icons.circle,
-                  size: 12,
-                  color: isAvailable ? Colors.green : Colors.red,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  isAvailable ? 'Available' : 'Unavailable',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+                  const SizedBox(height: 10),
+                  Text(
+                    'Starting from: Rs. $price/month',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Color.fromARGB(255, 13, 13, 13),
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 10),
+                  OutlinedButton(
+                    onPressed: onViewProfile,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.teal,
+                      side: const BorderSide(color: Colors.teal),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                    ),
+                    child: const Text(
+                      'View Profile',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
