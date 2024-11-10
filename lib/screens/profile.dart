@@ -13,36 +13,16 @@ class MentorProfilePage extends StatefulWidget {
 
 class _MentorProfilePageState extends State<MentorProfilePage> {
   late Future<Map<String, dynamic>> mentorData;
-
-  // List to store the timetable with editable slots and availability
-  List<Map<String, dynamic>> editableTimetable = [
-    {'time': '09:00 AM - 10:00 AM', 'available': true},
-    {'time': '10:00 AM - 11:00 AM', 'available': false},
-    {'time': '11:00 AM - 12:00 PM', 'available': true},
-    {'time': '01:00 PM - 02:00 PM', 'available': true},
-    // Add more time slots as needed
-  ];
+  late Future<Map<String, dynamic>?> availabilityData;
 
   @override
   void initState() {
     super.initState();
     mentorData = fetchMentorData(widget.userId);
+    availabilityData = fetchAvailabilityData(widget.userId); // Fetch availability data
   }
 
-  // Function to toggle availability for each time slot
-  void updateAvailability(int index) {
-    setState(() {
-      editableTimetable[index]['available'] = !editableTimetable[index]['available'];
-    });
-  }
-
-  // Function to update time for a specific slot
-  void updateTime(int index, String newTime) {
-    setState(() {
-      editableTimetable[index]['time'] = newTime;
-    });
-  }
-
+  // Function to fetch mentor data
   Future<Map<String, dynamic>> fetchMentorData(String userId) async {
     final response = await http.get(
       Uri.parse('http://192.168.1.15:3000/api/mentors/$userId'),
@@ -55,6 +35,19 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
     }
   }
 
+  // Function to fetch availability data (can be null if not available)
+  Future<Map<String, dynamic>?> fetchAvailabilityData(String userId) async {
+    final response = await http.get(
+      Uri.parse('http://192.168.1.15:3000/api/availability/$userId'),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      return null; // Return null if no availability data
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,20 +55,24 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
         title: const Text('Mentor Profile'),
         backgroundColor: Colors.teal,
       ),
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: mentorData,
+      body: FutureBuilder<List<dynamic>>(
+        // Await both mentor and availability data and handle them as a list
+        future: Future.wait([mentorData, availabilityData]),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData) {
+          } else if (!snapshot.hasData || snapshot.data == null) {
             return const Center(child: Text('No data available'));
           }
 
-          final mentor = snapshot.data!;
+          // Snapshot will now contain a List of the data
+          final mentor = snapshot.data![0]; // mentor data
+          final availability = snapshot.data![1]; // availability data (can be null)
+
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(20.0),  // Increased padding for better spacing
+            padding: const EdgeInsets.all(20.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -86,7 +83,7 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                       radius: 50,
                       backgroundImage: AssetImage('assets/default.png'),
                     ),
-                    const SizedBox(width: 20),  // Slightly increased spacing
+                    const SizedBox(width: 20),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,9 +91,9 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                           Text(
                             '${mentor['firstName']} ${mentor['lastName'] ?? ''}',
                             style: const TextStyle(
-                              fontSize: 24,  // Slightly reduced font size for the name
+                              fontSize: 24,
                               fontWeight: FontWeight.bold,
-                              color: Colors.teal,  // Changed to black color
+                              color: Colors.teal,
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -120,7 +117,7 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),  // Increased space between sections
+                const SizedBox(height: 24),
 
                 // 1. Skills Section
                 const Text(
@@ -130,8 +127,8 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                 ),
                 const SizedBox(height: 10),
                 Wrap(
-                  spacing: 10,  // Increased horizontal spacing between skills
-                  runSpacing: 10,  // Increased vertical spacing between skills
+                  spacing: 10,
+                  runSpacing: 10,
                   children: (mentor['skills'] as List<dynamic>? ?? []).map((skill) {
                     return Container(
                       padding: const EdgeInsets.symmetric(
@@ -139,31 +136,31 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                         horizontal: 20,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white, // Background color for each skill box
-                        borderRadius: BorderRadius.circular(12), // Rounded corners
-                        boxShadow:const  [
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: const [
                           BoxShadow(
                             color: Colors.black12,
                             blurRadius: 6,
                             offset: Offset(2, 2),
                           ),
-                        ], // Subtle shadow for depth
+                        ],
                         border: Border.all(
-                          color: Colors.teal, // Border color
-                          width: 1.5, // Border width
+                          color: Colors.teal,
+                          width: 1.5,
                         ),
                       ),
                       child: Text(
                         skill,
                         style: const TextStyle(
-                          color: Colors.teal, // Text color to match design
+                          color: Colors.teal,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: 24),  // Increased space between sections
+                const SizedBox(height: 24),
 
                 // 2. Qualifications Section
                 if (mentor['qualifications'] != null) ...[
@@ -208,55 +205,60 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                 ],
 
                 // 5. Timetable Section (Presented as a Table)
-                const SizedBox(height: 24),  // Space before Timetable
-                const Text(
-                  'Timetable:',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.teal,
+                if (availability != null && availability['slots'] != null) ...[
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Timetable:',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.teal,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 6),
-                Table(
-                  // No table border is applied
-                  children: [
-                    // Timetable rows without header
-                    for (int index = 0; index < editableTimetable.length; index++)
-                      TableRow(
-                        children: [
-                          TableCell(
-                            child: Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: TextField(
-                                controller: TextEditingController(text: editableTimetable[index]['time']),
-                                onChanged: (newTime) {
-                                  updateTime(index, newTime);
-                                },
-                                decoration: InputDecoration(
-                                  border:const OutlineInputBorder(),
-                                  labelText: 'Time Slot ${index + 1}',
+                  const SizedBox(height: 6),
+                  Table(
+                    children: [
+                      // Display mentor's slots from the availability data
+                      for (int index = 0; index < availability['slots'].length; index++)
+                        TableRow(
+                          children: [
+                            TableCell(
+                              child: Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: Text(
+                                  availability['slots'][index], // Display the time slot
+                                  style: const TextStyle(fontSize: 16),
                                 ),
                               ),
                             ),
-                          ),
-                          TableCell(
-                            child: Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: ElevatedButton(
-                                onPressed: () => updateAvailability(index),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: editableTimetable[index]['available'] ? Colors.green : Colors.red,
+                            TableCell(
+                              child: Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: ElevatedButton(
+                                  onPressed: null, // Button is disabled (read-only)
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.grey, // Disabled button color
+                                  ),
+                                  child: const Text('Available'),
                                 ),
-                                child: Text(editableTimetable[index]['available'] ? 'Available' : 'Unavailable'),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 24),  // Space after Timetable
+                          ],
+                        ),
+                    ],
+                  ),
+                ] else if (availability == null) ...[
+                  // If no availability data
+                  const SizedBox(height: 24),
+                  const Text(
+                    'No availability information.',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.teal,
+                    ),
+                  ),
+                ],
               ],
             ),
           );
