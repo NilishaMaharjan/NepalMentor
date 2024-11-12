@@ -17,7 +17,7 @@ class MathsPageState extends State<MathsPage> {
     try {
       final response = await http.get(
         Uri.parse(
-            'http://192.168.1.15:3000/api/mentors?category=$category&subjects=$subject'),
+            'http://192.168.0.108:3000/api/mentors?category=$category&subjects=$subject'),
       );
 
       if (response.statusCode == 200) {
@@ -93,12 +93,9 @@ class MathsPageState extends State<MathsPage> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.school), label: 'My Learning'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.notifications), label: 'Notifications'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.account_circle), label: 'Account'),
+          BottomNavigationBarItem(icon: Icon(Icons.school), label: 'My Learning'),
+          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Notifications'),
+          BottomNavigationBarItem(icon: Icon(Icons.account_circle), label: 'Account'),
         ],
         selectedItemColor: Colors.teal,
         unselectedItemColor: Colors.grey,
@@ -204,72 +201,8 @@ class MentorCard extends StatelessWidget {
                     children: [
                       const Icon(Icons.star, color: Colors.amber),
                       Text(
-<<<<<<< HEAD
-                        name,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize:
-                              20, // Increased font size for better visibility
-                        ),
-                      ),
-                      Text(
-                        role,
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 16, // Adjusted font size for the role
-                        ),
-                      ),
-                      const SizedBox(height: 5),
-                      Row(
-                        children: [
-                          const Icon(Icons.star,
-                              color: Colors.amber,
-                              size: 18), // Slightly larger star
-                          const SizedBox(width: 5),
-                          Text('$rating ($reviews reviews)'),
-                        ],
-                      ),
-                      const SizedBox(height: 5),
-                      Wrap(
-                        spacing: 6, // Spacing between skill badges
-                        children: skills.map((skill) {
-                          return Chip(
-                            label: Text(skill),
-                            backgroundColor: Colors.grey
-                                .shade50, // Changed badge color to light grey
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 5),
-                      Text('Starting from: Rs. $price/month',
-                          style: const TextStyle(
-                              fontSize: 16)), // Adjusted font size for price
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const MentorProfilePage(), // Navigate to MentorProfilePage
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.teal, // Button color
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(10), // Rounded button
-                          ),
-                        ),
-                        child: const Text(
-                          'View Profile',
-                          style: TextStyle(color: Colors.white),
-                        ),
-=======
                         ' $rating ($reviewsCount reviews)',
                         style: const TextStyle(fontSize: 16),
->>>>>>> 8bdcf8f6a494cfd541257ac92b23ef22d5155917
                       ),
                     ],
                   ),
