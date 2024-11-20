@@ -29,7 +29,7 @@ class LoginScreenState extends State<LoginScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.1.74:3000/api/auth/login'), // My IP address
+        Uri.parse('http://192.168.0.108:3000/api/auth/login'), // My IP address
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': email,
@@ -41,12 +41,12 @@ class LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
         String token = data['token'];
-        String userId = data['userId']; // Assuming the userId is returned
+        String userId = data['userId'];
 
-        // Store token and userId using shared preferences
+        // Store token using shared preferences
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', token);
-        await prefs.setString('userId', userId); // Store userId
+        await prefs.setString('userId', userId);
 
         // Conditional navigation based on role
         if (role == 'mentor') {
@@ -164,22 +164,47 @@ class LoginScreenState extends State<LoginScreen> {
                 const Text('or', textAlign: TextAlign.center),
                 const SizedBox(height: 8.0),
 
-                // Google Login Button (Placeholder)
-                Container(
-                  height: 56.0,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  child: TextButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.login, color: Colors.black),
-                    label: const Text(
-                      'Log in with Google',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                  ),
-                ),
+                
+              // Google Login Button with Google Logo
+// Google Login Button with Google Logo
+Container(
+  height: 56.0,
+  width: double.infinity,
+  decoration: BoxDecoration(
+    border: Border.all(color: Colors.grey),
+    borderRadius: BorderRadius.circular(8.0),
+  ),
+  child: TextButton(
+    onPressed: () {},
+    style: TextButton.styleFrom(
+      padding: EdgeInsets.zero,
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.start, 
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 40.0), // Adjust left padding for the logo
+          child: Image.asset(
+            'assets/google_logo.png',
+            height: 30.0,
+          ),
+        ),
+        const SizedBox(width: 60.0), // Add some spacing between logo and text
+        const Expanded(
+          child: Align(
+            alignment: Alignment.centerLeft, // Align text to the left
+            child: Text(
+              'Log in with Google',
+              style: TextStyle(color: Colors.black),
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+),
+
+
                 const SizedBox(height: 16.0),
 
                 // Forgot Password Button

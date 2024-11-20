@@ -26,7 +26,7 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
   // Function to fetch mentor data
   Future<Map<String, dynamic>> fetchMentorData(String userId) async {
     final response = await http.get(
-      Uri.parse('http://192.168.1.74:3000/api/mentors/$userId'),
+      Uri.parse('http://192.168.0.108:3000/api/mentors/$userId'),
     );
 
     if (response.statusCode == 200) {
@@ -39,7 +39,7 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
   // Function to fetch availability data (can be null if not available)
   Future<Map<String, dynamic>?> fetchAvailabilityData(String userId) async {
     final response = await http.get(
-      Uri.parse('http://192.168.1.74:3000/api/availability/$userId'),
+      Uri.parse('http://192.168.0.108:3000/api/availability/$userId'),
     );
 
     if (response.statusCode == 200) {

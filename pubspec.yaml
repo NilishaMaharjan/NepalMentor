@@ -37,7 +37,10 @@ dependencies:
   logger: ^1.1.0
   shared_preferences: ^2.0.15
   flutter_secure_storage: ^5.0.2
-  file_picker: ^5.0.1
+  file_picker: ^5.0.1 
+  google_sign_in: ^5.0.7
+  icons_plus: ^4.0.0
+
 
 dev_dependencies:
   flutter_test:
@@ -55,6 +58,9 @@ flutter:
   assets:
     - assets/logo.png
     - assets/default.png
+    - assets/google_logo.png
+    - assets/dashboard.png
+    
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
@@ -82,3 +88,4 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+

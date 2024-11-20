@@ -17,7 +17,7 @@ class MathsPageState extends State<MathsPage> {
     try {
       final response = await http.get(
         Uri.parse(
-            'http://192.168.1.74:3000/api/mentors?category=$category&subjects=$subject'),
+            'http://192.168.0.108:3000/api/mentors?category=$category&subjects=$subject'),
       );
 
       if (response.statusCode == 200) {

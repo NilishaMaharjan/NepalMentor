@@ -252,7 +252,7 @@ class SignupPageState extends State<SignupPage> {
   Future<void> _registerMentee() async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.1.74:3000/api/register/mentee'),
+        Uri.parse('http://192.168.0.108:3000/api/register/mentee'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'firstName': firstNameController.text,

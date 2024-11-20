@@ -3,59 +3,30 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'primary.dart';
 import 'secondary.dart';
+import 'session_history.dart'; // Import the session_history.dart page
+import 'my_mentors.dart'; // Import the my_mentors.dart page
+import 'profile_edit.dart'; // Import the profile_edit.dart page
 
-class Dashboard extends StatelessWidget {
+class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return const PersistentBottomNavigation();
-  }
+  State<Dashboard> createState() => _DashboardState();
 }
 
-class PersistentBottomNavigation extends StatefulWidget {
-  const PersistentBottomNavigation({super.key});
-
-  @override
-  State<PersistentBottomNavigation> createState() =>
-      _PersistentBottomNavigationState();
-}
-
-class _PersistentBottomNavigationState
-    extends State<PersistentBottomNavigation> {
-  int _selectedIndex = 0; // Tracks the selected index for BottomNavigationBar
+class _DashboardState extends State<Dashboard> {
   File? _profileImage;
-  File? _learningPhoto;
   final Color themeColor = const Color.fromARGB(255, 47, 161, 150);
 
-  // Method for picking an image
-  Future<void> _pickImage(ImageSource source,
-      {bool isLearningPhoto = false}) async {
+  int _selectedIndex = 0; // Tracks the selected index for BottomNavigationBar
+
+  Future<void> _pickImage(ImageSource source) async {
     final pickedImage = await ImagePicker().pickImage(source: source);
     if (pickedImage != null) {
       setState(() {
-        if (isLearningPhoto) {
-          _learningPhoto = File(pickedImage.path);
-        } else {
-          _profileImage = File(pickedImage.path);
-        }
+        _profileImage = File(pickedImage.path);
       });
     }
-  }
-
-  // List of pages
-  final List<Widget> _pages = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _pages.addAll([
-      _buildLearningDashboard(),
-      _buildSearch(),
-      _buildBlankPage("My Learning"),
-      _buildBlankPage("Notifications"),
-      _buildProfile(),
-    ]);
   }
 
   @override
@@ -74,8 +45,26 @@ class _PersistentBottomNavigationState
                           ? 'Notifications'
                           : 'Profile', // Title updates based on the selected tab
         ),
+        leading: _selectedIndex == 1
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  setState(() {
+                    _selectedIndex = 0; // Go back to the main dashboard
+                  });
+                },
+              )
+            : null, // No leading icon on the main page
       ),
-      body: _pages[_selectedIndex],
+      body: _selectedIndex == 0
+          ? _buildLearningDashboard()
+          : _selectedIndex == 1
+              ? _buildSearch()
+              : _selectedIndex == 2
+                  ? _buildBlankPage() // My Learning blank for now
+                  : _selectedIndex == 3
+                      ? _buildBlankPage() // Notifications blank for now
+                      : _buildProfile(),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
@@ -156,29 +145,19 @@ class _PersistentBottomNavigationState
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: GestureDetector(
-            onTap: () => _showImageSourceDialog(context, isLearningPhoto: true),
-            child: Container(
-              height: 160,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(10),
+          child: Container(
+            height: 300,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.asset(
+                'assets/dashboard.png', 
+                fit: BoxFit.fill,
+                width: double.infinity,
               ),
-              child: _learningPhoto != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.file(
-                        _learningPhoto!,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                      ),
-                    )
-                  : Center(
-                      child: Text(
-                        'Tap to upload a photo',
-                        style: TextStyle(fontSize: 16, color: themeColor),
-                      ),
-                    ),
             ),
           ),
         ),
@@ -247,10 +226,10 @@ class _PersistentBottomNavigationState
     );
   }
 
-  Widget _buildBlankPage(String title) {
+  Widget _buildBlankPage() {
     return Center(
       child: Text(
-        '$title page is under development.',
+        'This page is under development.',
         style: TextStyle(fontSize: 18, color: themeColor),
       ),
     );
@@ -267,9 +246,25 @@ class _PersistentBottomNavigationState
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 20),
-          _buildProfileOption(Icons.person, 'My Profile'),
-          _buildProfileOption(Icons.history, 'Session History'),
-          _buildProfileOption(Icons.star_border, 'My Mentors'),
+          _buildProfileOption(Icons.person, 'My Profile', () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfileEditPage()),
+            );
+          }),
+          _buildProfileOption(Icons.history, 'Session History', () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const SessionHistoryPage()),
+            );
+          }),
+          _buildProfileOption(Icons.star_border, 'My Mentors', () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const MyMentorsPage()),
+            );
+          }),
           _buildProfileOption(Icons.payment, 'Payment History'),
           _buildProfileOption(Icons.settings, 'Settings'),
           const SizedBox(height: 20),
@@ -289,58 +284,54 @@ class _PersistentBottomNavigationState
     );
   }
 
-  Widget _buildProfileOption(IconData icon, String label) {
+  Widget _buildProfileOption(IconData icon, String title,
+      [void Function()? onTap]) {
     return ListTile(
-      leading: Icon(icon, color: Colors.teal),
-      title: Text(label),
-      onTap: () {},
+      leading: Icon(icon),
+      title: Text(title),
+      onTap: onTap,
     );
   }
 
   Widget _buildLevelCard(String level, IconData icon) {
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 30, color: themeColor),
+          Icon(icon, size: 40, color: themeColor),
           const SizedBox(height: 10),
           Text(
             level,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 16, color:Colors.teal),
           ),
         ],
       ),
     );
   }
 
-  void _showImageSourceDialog(BuildContext context,
-      {bool isLearningPhoto = false}) {
+  void _showImageSourceDialog(BuildContext context) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
-        return Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Take a photo'),
-              onTap: () {
-                Navigator.pop(context);
-                _pickImage(ImageSource.camera,
-                    isLearningPhoto: isLearningPhoto);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Choose from gallery'),
-              onTap: () {
-                Navigator.pop(context);
-                _pickImage(ImageSource.gallery,
-                    isLearningPhoto: isLearningPhoto);
-              },
-            ),
-          ],
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Photo Library'),
+                onTap: () => _pickImage(ImageSource.gallery),
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Camera'),
+                onTap: () => _pickImage(ImageSource.camera),
+              ),
+            ],
+          ),
         );
       },
     );
