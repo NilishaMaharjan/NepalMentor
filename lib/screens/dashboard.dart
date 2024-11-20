@@ -4,20 +4,31 @@ import 'package:image_picker/image_picker.dart';
 import 'primary.dart';
 import 'secondary.dart';
 
-class Dashboard extends StatefulWidget {
+class Dashboard extends StatelessWidget {
   const Dashboard({super.key});
 
   @override
-  State<Dashboard> createState() => _DashboardState();
+  Widget build(BuildContext context) {
+    return const PersistentBottomNavigation();
+  }
 }
 
-class _DashboardState extends State<Dashboard> {
+class PersistentBottomNavigation extends StatefulWidget {
+  const PersistentBottomNavigation({super.key});
+
+  @override
+  State<PersistentBottomNavigation> createState() =>
+      _PersistentBottomNavigationState();
+}
+
+class _PersistentBottomNavigationState
+    extends State<PersistentBottomNavigation> {
+  int _selectedIndex = 0; // Tracks the selected index for BottomNavigationBar
   File? _profileImage;
   File? _learningPhoto;
   final Color themeColor = const Color.fromARGB(255, 47, 161, 150);
 
-  int _selectedIndex = 0; // Tracks the selected index for BottomNavigationBar
-
+  // Method for picking an image
   Future<void> _pickImage(ImageSource source,
       {bool isLearningPhoto = false}) async {
     final pickedImage = await ImagePicker().pickImage(source: source);
@@ -30,6 +41,21 @@ class _DashboardState extends State<Dashboard> {
         }
       });
     }
+  }
+
+  // List of pages
+  final List<Widget> _pages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _pages.addAll([
+      _buildLearningDashboard(),
+      _buildSearch(),
+      _buildBlankPage("My Learning"),
+      _buildBlankPage("Notifications"),
+      _buildProfile(),
+    ]);
   }
 
   @override
@@ -48,26 +74,8 @@ class _DashboardState extends State<Dashboard> {
                           ? 'Notifications'
                           : 'Profile', // Title updates based on the selected tab
         ),
-        leading: _selectedIndex == 1
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  setState(() {
-                    _selectedIndex = 0; // Go back to the main dashboard
-                  });
-                },
-              )
-            : null, // No leading icon on the main page
       ),
-      body: _selectedIndex == 0
-          ? _buildLearningDashboard()
-          : _selectedIndex == 1
-              ? _buildSearch()
-              : _selectedIndex == 2
-                  ? _buildBlankPage() // My Learning blank for now
-                  : _selectedIndex == 3
-                      ? _buildBlankPage() // Notifications blank for now
-                      : _buildProfile(),
+      body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
@@ -239,10 +247,10 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget _buildBlankPage() {
+  Widget _buildBlankPage(String title) {
     return Center(
       child: Text(
-        'This page is under development.',
+        '$title page is under development.',
         style: TextStyle(fontSize: 18, color: themeColor),
       ),
     );
@@ -259,16 +267,13 @@ class _DashboardState extends State<Dashboard> {
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 20),
-          _buildProfileOption(Icons.person, 'My Profile'), // View/Edit Profile
-          _buildProfileOption(
-              Icons.history, 'Session History'), // View past sessions
-          _buildProfileOption(
-              Icons.star_border, 'My Mentors'), // View mentees' mentors
-          _buildProfileOption(Icons.payment,
-              'Payment History'), // View any payment or subscription history
-          _buildProfileOption(Icons.settings, 'Settings'), // App Settings
+          _buildProfileOption(Icons.person, 'My Profile'),
+          _buildProfileOption(Icons.history, 'Session History'),
+          _buildProfileOption(Icons.star_border, 'My Mentors'),
+          _buildProfileOption(Icons.payment, 'Payment History'),
+          _buildProfileOption(Icons.settings, 'Settings'),
           const SizedBox(height: 20),
-          _buildLogoutButton(), // Logout
+          _buildLogoutButton(),
         ],
       ),
     );
@@ -312,16 +317,14 @@ class _DashboardState extends State<Dashboard> {
 
   void _showImageSourceDialog(BuildContext context,
       {bool isLearningPhoto = false}) {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Select Image Source'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+      builder: (context) {
+        return Wrap(
           children: [
             ListTile(
-              leading: Icon(Icons.camera_alt, color: themeColor),
-              title: const Text('Camera'),
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Take a photo'),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.camera,
@@ -329,8 +332,8 @@ class _DashboardState extends State<Dashboard> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.photo, color: themeColor),
-              title: const Text('Gallery'),
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from gallery'),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.gallery,
@@ -338,8 +341,8 @@ class _DashboardState extends State<Dashboard> {
               },
             ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 }
