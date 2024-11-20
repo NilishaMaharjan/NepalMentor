@@ -19,13 +19,14 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
   void initState() {
     super.initState();
     mentorData = fetchMentorData(widget.userId);
-    availabilityData = fetchAvailabilityData(widget.userId); // Fetch availability data
+    availabilityData =
+        fetchAvailabilityData(widget.userId); // Fetch availability data
   }
 
   // Function to fetch mentor data
   Future<Map<String, dynamic>> fetchMentorData(String userId) async {
     final response = await http.get(
-      Uri.parse('http://192.168.0.108:3000/api/mentors/$userId'),
+      Uri.parse('http://192.168.1.74:3000/api/mentors/$userId'),
     );
 
     if (response.statusCode == 200) {
@@ -38,7 +39,7 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
   // Function to fetch availability data (can be null if not available)
   Future<Map<String, dynamic>?> fetchAvailabilityData(String userId) async {
     final response = await http.get(
-      Uri.parse('http://192.168.0.108:3000/api/availability/$userId'),
+      Uri.parse('http://192.168.1.74:3000/api/availability/$userId'),
     );
 
     if (response.statusCode == 200) {
@@ -69,7 +70,8 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
 
           // Snapshot will now contain a List of the data
           final mentor = snapshot.data![0]; // mentor data
-          final availability = snapshot.data![1]; // availability data (can be null)
+          final availability =
+              snapshot.data![1]; // availability data (can be null)
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20.0),
@@ -123,13 +125,16 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                 const Text(
                   'Skills:',
                   style: TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal),
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.teal),
                 ),
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 10,
                   runSpacing: 10,
-                  children: (mentor['skills'] as List<dynamic>? ?? []).map((skill) {
+                  children:
+                      (mentor['skills'] as List<dynamic>? ?? []).map((skill) {
                     return Container(
                       padding: const EdgeInsets.symmetric(
                         vertical: 10,
@@ -166,7 +171,10 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                 if (mentor['qualifications'] != null) ...[
                   const Text(
                     'Qualifications:',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal),
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.teal),
                   ),
                   const SizedBox(height: 6),
                   Text(
@@ -180,7 +188,10 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                 if (mentor['bio'] != null) ...[
                   const Text(
                     'Bio:',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal),
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.teal),
                   ),
                   const SizedBox(height: 6),
                   Text(
@@ -194,7 +205,10 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                 if (mentor['location'] != null) ...[
                   const Text(
                     'Location:',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal),
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.teal),
                   ),
                   const SizedBox(height: 6),
                   Text(
@@ -219,14 +233,17 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                   Table(
                     children: [
                       // Display mentor's slots from the availability data
-                      for (int index = 0; index < availability['slots'].length; index++)
+                      for (int index = 0;
+                          index < availability['slots'].length;
+                          index++)
                         TableRow(
                           children: [
                             TableCell(
                               child: Padding(
                                 padding: const EdgeInsets.all(10.0),
                                 child: Text(
-                                  availability['slots'][index], // Display the time slot
+                                  availability['slots']
+                                      [index], // Display the time slot
                                   style: const TextStyle(fontSize: 16),
                                 ),
                               ),
@@ -235,9 +252,11 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                               child: Padding(
                                 padding: const EdgeInsets.all(10.0),
                                 child: ElevatedButton(
-                                  onPressed: null, // Button is disabled (read-only)
+                                  onPressed:
+                                      null, // Button is disabled (read-only)
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.grey, // Disabled button color
+                                    backgroundColor:
+                                        Colors.grey, // Disabled button color
                                   ),
                                   child: const Text('Available'),
                                 ),

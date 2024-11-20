@@ -12,6 +12,7 @@ import 'package:nepalmentors/screens/forgetpw.dart';
 import 'package:nepalmentors/screens/primary.dart';
 import 'package:nepalmentors/screens/mathsavail.dart';
 import 'package:nepalmentors/screens/resetpw.dart';
+import 'package:nepalmentors/screens/edit_availability.dart'; // Import file for view availability functionality
 
 void main() {
   runApp(const MyApp());
@@ -38,30 +39,32 @@ class MyApp extends StatelessWidget {
             name: '/mentorregistrationinfo',
             page: () => const MentorAdditionalInfo()),
         GetPage(name: '/dashboard', page: () => const Dashboard()),
-        GetPage(name: '/mentordashboard', page: () => const MentorDashboard()),
+        GetPage(
+          name: '/mentordashboard',
+          page: () => const MentorDashboard(), // No need to pass userId
+        ),
         GetPage(name: '/primarylevel', page: () => const PrimaryLevelPage()),
         GetPage(name: '/grade7maths', page: () => const MathsPage()),
-       GetPage(
-      name: '/mentorprofile',
-      page: () {
-       // Get the 'userId' from the parameters or provide a default value
-      final userId = Get.parameters['mentorId'] ?? '';  // default to empty string if not found
-      return MentorProfilePage(userId: userId);  // Pass 'userId' here
-  },
-),
-
-
-
-
-
+        GetPage(
+          name: '/viewAvailability',
+          page: () =>
+              const ViewAvailabilityScreen(), // No need to pass userId here
+        ),
+        GetPage(
+          name: '/mentorprofile',
+          page: () {
+            final userId = Get.parameters['mentorId'] ??
+                ''; // Default to empty string if not found
+            return MentorProfilePage(userId: userId); // Pass userId here
+          },
+        ),
         GetPage(
           name: '/reset-password/:token',
           page: () {
-            // Get the token from the parameters
             final token = Get.parameters['token']!;
             return ResetPasswordPage(token: token);
           },
-        )
+        ),
       ],
     );
   }

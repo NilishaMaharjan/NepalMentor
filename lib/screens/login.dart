@@ -29,7 +29,7 @@ class LoginScreenState extends State<LoginScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.0.108:3000/api/auth/login'), // My IP address
+        Uri.parse('http://192.168.1.74:3000/api/auth/login'), // My IP address
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': email,
@@ -41,10 +41,12 @@ class LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
         String token = data['token'];
+        String userId = data['userId']; // Assuming the userId is returned
 
-        // Store token using shared preferences
+        // Store token and userId using shared preferences
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', token);
+        await prefs.setString('userId', userId); // Store userId
 
         // Conditional navigation based on role
         if (role == 'mentor') {

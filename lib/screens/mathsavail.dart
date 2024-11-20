@@ -17,7 +17,7 @@ class MathsPageState extends State<MathsPage> {
     try {
       final response = await http.get(
         Uri.parse(
-            'http://192.168.0.108:3000/api/mentors?category=$category&subjects=$subject'),
+            'http://192.168.1.74:3000/api/mentors?category=$category&subjects=$subject'),
       );
 
       if (response.statusCode == 200) {
@@ -67,22 +67,26 @@ class MathsPageState extends State<MathsPage> {
               itemCount: mentors.length,
               itemBuilder: (context, index) {
                 return MentorCard(
-                  name: '${mentors[index]['firstName']} ${mentors[index]['lastName'] ?? 'No last name'}',
+                  name:
+                      '${mentors[index]['firstName']} ${mentors[index]['lastName'] ?? 'No last name'}',
                   role: mentors[index]['jobTitle'] ?? 'No role',
                   skills: List<String>.from(mentors[index]['subjects'] ?? []),
                   price: 3000,
                   rating: mentors[index]['rating'] ?? 'N/A', // Rating
-                  reviewsCount: mentors[index]['reviewsCount'] ?? '0', // Reviews count
+                  reviewsCount:
+                      mentors[index]['reviewsCount'] ?? '0', // Reviews count
                   imageUrl: 'assets/default.png',
                   onViewProfile: () {
                     // Pass the mentor's userId dynamically when navigating to the profile page
-                    String mentorId = mentors[index]['user']?['_id'] ?? mentors[index]['_id'];
+                    String mentorId =
+                        mentors[index]['user']?['_id'] ?? mentors[index]['_id'];
                     print('Mentor data: ${mentors[index]}');
 
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => MentorProfilePage(userId: mentorId), // Pass 'userId' here
+                        builder: (context) => MentorProfilePage(
+                            userId: mentorId), // Pass 'userId' here
                       ),
                     );
                   },
@@ -93,9 +97,12 @@ class MathsPageState extends State<MathsPage> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(Icons.school), label: 'My Learning'),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Notifications'),
-          BottomNavigationBarItem(icon: Icon(Icons.account_circle), label: 'Account'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.school), label: 'My Learning'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.notifications), label: 'Notifications'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.account_circle), label: 'Account'),
         ],
         selectedItemColor: Colors.teal,
         unselectedItemColor: Colors.grey,
@@ -189,7 +196,8 @@ class MentorCard extends StatelessWidget {
                         label: Text(
                           skill,
                           style: const TextStyle(
-                              fontWeight: FontWeight.bold, color: Colors.black87),
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87),
                         ),
                         backgroundColor: Colors.grey.shade100,
                       );
@@ -225,7 +233,8 @@ class MentorCard extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 16),
                     ),
                     child: const Text(
                       'View Profile',
