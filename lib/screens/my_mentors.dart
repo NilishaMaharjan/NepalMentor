@@ -22,7 +22,7 @@ class MyMentorsPageState extends State<MyMentorsPage> {
   // Function to fetch mentor data from the backend
   Future<void> fetchMentors() async {
     try {
-      final response = await http.get(Uri.parse('http://192.168.0.108:3000/api/mentors'));
+      final response = await http.get(Uri.parse('http://192.168.193.174:3000/api/mentors'));
 
       if (response.statusCode == 200) {
         List<dynamic> data = json.decode(response.body);

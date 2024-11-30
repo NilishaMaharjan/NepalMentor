@@ -38,7 +38,7 @@ class _DashboardState extends State<Dashboard> {
           _selectedIndex == 0
               ? 'Learning Dashboard'
               : _selectedIndex == 1
-                  ? 'Search'
+                  ? 'My Community'
                   : _selectedIndex == 2
                       ? 'My Learning'
                       : _selectedIndex == 3
@@ -59,7 +59,7 @@ class _DashboardState extends State<Dashboard> {
       body: _selectedIndex == 0
           ? _buildLearningDashboard()
           : _selectedIndex == 1
-              ? _buildSearch()
+              ? _buildBlankPage()
               : _selectedIndex == 2
                   ? _buildBlankPage() // My Learning blank for now
                   : _selectedIndex == 3
@@ -74,7 +74,8 @@ class _DashboardState extends State<Dashboard> {
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.groups), label: 'My Community'),
           BottomNavigationBarItem(
               icon: Icon(Icons.school), label: 'My Learning'),
           BottomNavigationBarItem(
@@ -89,94 +90,105 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Widget _buildLearningDashboard() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              GestureDetector(
-                onTap: () => _showImageSourceDialog(context),
-                child: Container(
-                  width: 70,
-                  height: 70,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(35),
-                  ),
-                  child: _profileImage != null
-                      ? ClipOval(
-                          child: Image.file(
-                            _profileImage!,
-                            fit: BoxFit.cover,
-                            width: 70,
-                            height: 70,
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () => _showImageSourceDialog(context),
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(35),
+                    ),
+                    child: _profileImage != null
+                        ? ClipOval(
+                            child: Image.file(
+                              _profileImage!,
+                              fit: BoxFit.cover,
+                              width: 70,
+                              height: 70,
+                            ),
+                          )
+                        : Icon(
+                            Icons.camera_alt,
+                            size: 35,
+                            color: themeColor,
                           ),
-                        )
-                      : Icon(
-                          Icons.camera_alt,
-                          size: 35,
-                          color: themeColor,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Welcome, Username!',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
                         ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        '"Learning is a treasure that will follow its \n  owner everywhere."',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Welcome, Username!',
-                      style:
-                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 5),
-                    Text(
-                      '"Learning is a treasure that will follow its \n  owner everywhere."',
-                      style:
-                          TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Container(
-            height: 300,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(10),
+              ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Image.asset(
-                'assets/dashboard.png', 
-                fit: BoxFit.fill,
-                width: double.infinity,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Container(
+              height: 300,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.asset(
+                  'assets/dashboard.png',
+                  fit: BoxFit.fill,
+                  width: double.infinity,
+                ),
               ),
             ),
           ),
-        ),
-        const SizedBox(height: 20),
-        const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text(
-            'Choose your level',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          const SizedBox(height: 20),
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Choose your level',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
-        ),
-        Expanded(
-          child: Padding(
+          Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: GridView.count(
               crossAxisCount: 3,
               childAspectRatio: 1,
               mainAxisSpacing: 10,
               crossAxisSpacing: 10,
+              shrinkWrap:
+                  true, // Ensures the grid takes only as much height as needed
+              physics:
+                  const NeverScrollableScrollPhysics(), // Disables GridView scrolling
               children: [
                 GestureDetector(
                   onTap: () => Navigator.push(
@@ -203,24 +215,6 @@ class _DashboardState extends State<Dashboard> {
               ],
             ),
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSearch() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          TextField(
-            decoration: InputDecoration(
-              hintText: 'Search...',
-              prefixIcon: Icon(Icons.search, color: themeColor),
-              border: const OutlineInputBorder(),
-            ),
-            autofocus: true,
-          ),
         ],
       ),
     );
@@ -242,7 +236,7 @@ class _DashboardState extends State<Dashboard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Account Management',
+            'Setting',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 20),
@@ -266,7 +260,6 @@ class _DashboardState extends State<Dashboard> {
             );
           }),
           _buildProfileOption(Icons.payment, 'Payment History'),
-          _buildProfileOption(Icons.settings, 'Settings'),
           const SizedBox(height: 20),
           _buildLogoutButton(),
         ],
@@ -306,7 +299,7 @@ class _DashboardState extends State<Dashboard> {
           const SizedBox(height: 10),
           Text(
             level,
-            style: const TextStyle(fontSize: 16, color:Colors.teal),
+            style: const TextStyle(fontSize: 16, color: Colors.teal),
           ),
         ],
       ),

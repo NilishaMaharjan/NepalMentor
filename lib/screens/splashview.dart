@@ -14,19 +14,26 @@ class MySplashState extends State<MySplash> {
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(seconds: 4), () {
-      Get.off(() => const LoginScreen()); // Replace Get.to() with Get.off()
+    Timer(const Duration(seconds: 8), () {
+      Get.off(() => const LoginScreen());
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/logo.png'),
-            fit: BoxFit.cover,
+      body: SizedBox.expand(
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.black, // Optional: Background color for padding areas
+          ),
+          child: Center(
+            child: Image.asset(
+              'assets/logo.png',
+              fit: BoxFit.contain, // Adjust as needed (contain, cover, etc.)
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+            ),
           ),
         ),
       ),

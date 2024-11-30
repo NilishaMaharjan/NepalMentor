@@ -91,6 +91,7 @@ class SignupPageState extends State<SignupPage> {
                 focusNode: _firstNameFocus,
                 label: 'First Name',
                 validatorMessage: 'Please enter your first name',
+                textCapitalization: TextCapitalization.words,
               ),
               const SizedBox(height: 16),
               _buildTextField(
@@ -98,6 +99,7 @@ class SignupPageState extends State<SignupPage> {
                 focusNode: _lastNameFocus,
                 label: 'Last Name',
                 validatorMessage: 'Please enter your last name',
+                textCapitalization: TextCapitalization.words,
               ),
               const SizedBox(height: 16),
               _buildTextField(
@@ -121,6 +123,7 @@ class SignupPageState extends State<SignupPage> {
                 focusNode: _institutionFocus,
                 label: 'Institution',
                 validatorMessage: 'Please enter your institution',
+                textCapitalization: TextCapitalization.words,
               ),
               const SizedBox(height: 16),
               _buildTextField(
@@ -128,6 +131,7 @@ class SignupPageState extends State<SignupPage> {
                 focusNode: _locationFocus,
                 label: 'Location',
                 validatorMessage: 'Please enter your location',
+                textCapitalization: TextCapitalization.words,
               ),
               const SizedBox(height: 16),
               _buildPasswordField(),
@@ -157,11 +161,13 @@ class SignupPageState extends State<SignupPage> {
     required String label,
     required String validatorMessage,
     TextInputType keyboardType = TextInputType.text,
+    TextCapitalization textCapitalization = TextCapitalization.none,
   }) {
     return TextFormField(
       controller: controller,
       focusNode: focusNode,
       keyboardType: keyboardType,
+      textCapitalization: textCapitalization,
       cursorColor: Colors.teal,
       style: TextStyle(
         color: focusNode.hasFocus ? Colors.teal : Colors.black,
@@ -252,7 +258,7 @@ class SignupPageState extends State<SignupPage> {
   Future<void> _registerMentee() async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.0.108:3000/api/register/mentee'),
+        Uri.parse('http://192.168.193.174:3000/api/register/mentee'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'firstName': firstNameController.text,

@@ -73,7 +73,7 @@ class MentorRegistrationAndAdditionalInfoState
     try {
       // Send the data as JSON using a POST request
       final response = await http.post(
-        Uri.parse('http://192.168.0.108:3000/api/mentorregister/mentor'),
+        Uri.parse('http://192.168.0.104:3000/api/mentorregister/mentor'),
         headers: {
           'Content-Type': 'application/json',
         },

@@ -21,7 +21,7 @@ class _SessionHistoryPageState extends State<SessionHistoryPage> {
   }
 
   Future<void> _fetchSessionHistory() async {
-   final String apiUrl = 'https://192.168.0.108:3000/api/session-history';
+   final String apiUrl = 'https://192.168.193.174:3000/api/session-history';
 
     try {
       final response = await http.get(Uri.parse(apiUrl));

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:nepalmentors/screens/dashboard.dart';
 import 'mathsavail.dart';
+import 'session_history.dart'; // Import the session_history.dart page
+import 'my_mentors.dart'; // Import the my_mentors.dart page
+import 'profile_edit.dart'; // Import the profile_edit.dart page
 
 class PrimaryLevelPage extends StatefulWidget {
   const PrimaryLevelPage({super.key});
@@ -109,8 +112,10 @@ class _PrimaryLevelPageState extends State<PrimaryLevelPage> {
           Scaffold(
             body: _buildGradeList(),
           ),
-          // Search page
-          const SearchPage(),
+          //My Communities page
+          Scaffold(
+            body: _buildBlankPage(),
+          ),
           // My Learning placeholder page
           Scaffold(
             body: _buildBlankPage(),
@@ -150,10 +155,10 @@ class _PrimaryLevelPageState extends State<PrimaryLevelPage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(
-              Icons.search,
+              Icons.groups,
               color: _selectedIndex == 1 ? themeColor : Colors.grey,
             ),
-            label: 'Search',
+            label: 'My Community',
           ),
           BottomNavigationBarItem(
             icon: Icon(
@@ -188,7 +193,7 @@ class _PrimaryLevelPageState extends State<PrimaryLevelPage> {
       case 0:
         return 'Primary Level';
       case 1:
-        return 'Search';
+        return 'My Community';
       case 2:
         return 'My Learning';
       case 3:
@@ -241,32 +246,44 @@ class _PrimaryLevelPageState extends State<PrimaryLevelPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Account Management',
+            'Settings',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 20),
-          _buildProfileOption(Icons.person, 'My Profile'), // View/Edit Profile
-          _buildProfileOption(
-              Icons.history, 'Session History'), // View past sessions
-          _buildProfileOption(
-              Icons.star_border, 'My Mentors'), // View mentees' mentors
-          _buildProfileOption(
-              Icons.payment, 'Payment History'), // Payment history
-          _buildProfileOption(Icons.settings, 'Settings'), // App Settings
+          _buildProfileOption(Icons.person, 'My Profile', () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfileEditPage()),
+            );
+          }),
+          _buildProfileOption(Icons.history, 'Session History', () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const SessionHistoryPage()),
+            );
+          }),
+          _buildProfileOption(Icons.star_border, 'My Mentors', () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const MyMentorsPage()),
+            );
+          }),
+          _buildProfileOption(Icons.payment, 'Payment History', () {
+            // Add functionality for Payment History
+          }),
           const SizedBox(height: 20),
-          _buildLogoutButton(), // Logout
+          _buildLogoutButton(),
         ],
       ),
     );
   }
 
-  Widget _buildProfileOption(IconData icon, String title) {
+  Widget _buildProfileOption(IconData icon, String title, VoidCallback onTap) {
     return ListTile(
       leading: Icon(icon, color: Colors.teal),
       title: Text(title),
-      onTap: () {
-        // Handle the option tap based on title or add routes here
-      },
+      onTap: onTap,
     );
   }
 
@@ -328,8 +345,10 @@ class _GradeSubjectsPageState extends State<GradeSubjectsPage> {
         children: [
           // Grade subjects list page
           _buildGradeSubjectList(),
-          // Search page
-          const SearchPage(),
+          // My Communities page
+          Scaffold(
+            body: _buildBlankPage(),
+          ),
           // My Learning page placeholder
           _buildBlankPage(),
           // Notifications page placeholder
@@ -360,10 +379,10 @@ class _GradeSubjectsPageState extends State<GradeSubjectsPage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(
-              Icons.search,
+              Icons.groups,
               color: _selectedIndex == 1 ? themeColor : Colors.grey,
             ),
-            label: 'Search',
+            label: 'My Communiy',
           ),
           BottomNavigationBarItem(
             icon: Icon(
@@ -398,7 +417,7 @@ class _GradeSubjectsPageState extends State<GradeSubjectsPage> {
       case 0:
         return '${widget.grade} Subjects';
       case 1:
-        return 'Search';
+        return 'My Community';
       case 2:
         return 'My Learning';
       case 3:
@@ -448,32 +467,44 @@ class _GradeSubjectsPageState extends State<GradeSubjectsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Account Management',
+            'Settings',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 20),
-          _buildProfileOption(Icons.person, 'My Profile'), // View/Edit Profile
-          _buildProfileOption(
-              Icons.history, 'Session History'), // View past sessions
-          _buildProfileOption(
-              Icons.star_border, 'My Mentors'), // View mentees' mentors
-          _buildProfileOption(
-              Icons.payment, 'Payment History'), // Payment history
-          _buildProfileOption(Icons.settings, 'Settings'), // App Settings
+          _buildProfileOption(Icons.person, 'My Profile', () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfileEditPage()),
+            );
+          }),
+          _buildProfileOption(Icons.history, 'Session History', () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const SessionHistoryPage()),
+            );
+          }),
+          _buildProfileOption(Icons.star_border, 'My Mentors', () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const MyMentorsPage()),
+            );
+          }),
+          _buildProfileOption(Icons.payment, 'Payment History', () {
+            // Add functionality for Payment History
+          }),
           const SizedBox(height: 20),
-          _buildLogoutButton(), // Logout
+          _buildLogoutButton(),
         ],
       ),
     );
   }
 
-  Widget _buildProfileOption(IconData icon, String title) {
+  Widget _buildProfileOption(IconData icon, String title, VoidCallback onTap) {
     return ListTile(
       leading: Icon(icon, color: Colors.teal),
       title: Text(title),
-      onTap: () {
-        // Handle the option tap based on title or add routes here
-      },
+      onTap: onTap,
     );
   }
 
@@ -492,35 +523,6 @@ class _GradeSubjectsPageState extends State<GradeSubjectsPage> {
       child: Text(
         'This page is under development.',
         style: TextStyle(fontSize: 18, color: Colors.teal),
-      ),
-    );
-  }
-}
-
-class SearchPage extends StatelessWidget {
-  const SearchPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: _buildSearch(),
-    );
-  }
-
-  Widget _buildSearch() {
-    return const Padding(
-      padding: EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          TextField(
-            decoration: InputDecoration(
-              hintText: 'Search...',
-              prefixIcon: Icon(Icons.search, color: Colors.teal),
-              border: OutlineInputBorder(),
-            ),
-            autofocus: true,
-          ),
-        ],
       ),
     );
   }

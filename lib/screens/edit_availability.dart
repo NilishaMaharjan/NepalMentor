@@ -39,7 +39,7 @@ class _ViewAvailabilityScreenState extends State<ViewAvailabilityScreen> {
     try {
       print("Fetching availability for userId: $userId");
       final response = await http.get(
-        Uri.parse('http://192.168.0.108:3000/api/availability/$userId'),
+        Uri.parse('http://192.168.193.174:3000/api/availability/$userId'),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -85,7 +85,7 @@ class _ViewAvailabilityScreenState extends State<ViewAvailabilityScreen> {
 
       // Send the new slot to the backend
       final response = await http.post(
-        Uri.parse('http://192.168.0.108:3000/api/availability/$userId'),
+        Uri.parse('http://192.168.193.174:3000/api/availability/$userId'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -134,7 +134,7 @@ class _ViewAvailabilityScreenState extends State<ViewAvailabilityScreen> {
       // Send the updated slot to the backend
       final response = await http.put(
         Uri.parse(
-            'http://192.168.0.108:3000/api/availability/$userId/edit-slot'),
+            'http://192.168.193.174:3000/api/availability/$userId/edit-slot'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -211,7 +211,7 @@ class _ViewAvailabilityScreenState extends State<ViewAvailabilityScreen> {
       // Send the delete request to the backend
       final response = await http.delete(
         Uri.parse(
-            'http://192.168.0.108:3000/api/availability/$userId/delete-slot'),
+            'http://192.168.193.174:3000/api/availability/$userId/delete-slot'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'slot': slot}), // Send the slot to be deleted
       );

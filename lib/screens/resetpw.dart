@@ -100,7 +100,7 @@ class ResetPasswordPage extends StatelessWidget {
                       try {
                         final response = await http.post(
                           Uri.parse(
-                              'http://192.168.0.108:3000/api/auth/reset-password/$token'),
+                              'http://192.168.193.174:3000/api/auth/reset-password/$token'),
                           headers: {'Content-Type': 'application/json'},
                           body: json.encode({'password': newPassword}),
                         );
