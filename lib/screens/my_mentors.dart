@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../conf_ip.dart';
 
 class MyMentorsPage extends StatefulWidget {
   const MyMentorsPage({super.key});
@@ -22,7 +23,7 @@ class MyMentorsPageState extends State<MyMentorsPage> {
   // Function to fetch mentor data from the backend
   Future<void> fetchMentors() async {
     try {
-      final response = await http.get(Uri.parse('http://192.168.193.174:3000/api/mentors'));
+      final response = await http.get(Uri.parse('$baseUrl/api/mentors'));
 
       if (response.statusCode == 200) {
         List<dynamic> data = json.decode(response.body);
@@ -35,8 +36,10 @@ class MyMentorsPageState extends State<MyMentorsPage> {
               'name': mentor['name'] ?? 'No name available',
               'jobTitle': mentor['jobTitle'] ?? 'No job title available',
               'skills': (mentor['skills'] is List)
-                  ? (mentor['skills'] as List).join(', ') // Convert list to string
-                  : mentor['skills'] ?? 'No skills available', // Fallback if it's null
+                  ? (mentor['skills'] as List)
+                      .join(', ') // Convert list to string
+                  : mentor['skills'] ??
+                      'No skills available', // Fallback if it's null
             };
           }).toList();
         });

@@ -1,70 +1,43 @@
 import 'package:flutter/material.dart';
-import 'package:nepalmentors/screens/dashboard.dart';
+import 'dashboard.dart';
 import 'mentor_search_page.dart';
-import 'session_history.dart'; // Import the session_history.dart page
+import 'session_history.dart';
 import 'my_mentors.dart';
+import 'menteeprofile_edit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'menteeprofile_edit.dart'; // Import the menteeprofile_edit.dart page
 
-class SecondaryLevelPage extends StatefulWidget {
-  const SecondaryLevelPage({super.key});
+class DiplomaLevelPage extends StatefulWidget {
+  const DiplomaLevelPage({super.key});
 
-  // Grade subjects for each secondary grade.
+  /// Updated subject mapping based on a review of Diploma courses.
   static const gradeSubjects = {
-    'Grade 9': [
+    'Diploma 1': [
       'English',
       'Mathematics',
-      'Science',
-      'Social Studies',
-      'Nepali',
-      'Computer',
-      'Optional Mathematics',
-      'Account',
-      'Biology',
-      'Physics'
+      'Engineering Graphics',
+      'Fundamentals of Engineering',
+      'Workshop Practices'
     ],
-    'Grade 10': [
-      'English',
+    'Diploma 2': [
       'Mathematics',
-      'Science',
-      'Social Studies',
-      'Nepali',
-      'Computer',
-      'Optional Mathematics',
-      'Account',
-      'Biology',
-      'Physics'
+      'Physics',
+      'Thermodynamics',
+      'Materials Science',
+      'Electrical Fundamentals'
     ],
-    'Grade 11': [
-      'English',
+    'Diploma 3': [
       'Mathematics',
-      'Science',
-      'Nepali',
-      'Computer',
-      'Optional Mathematics',
-      'Account',
-      'Economics',
-      'Political Science',
-      'Business Studies'
-    ],
-    'Grade 12': [
-      'English',
-      'Mathematics',
-      'Science',
-      'Nepali',
-      'Computer',
-      'Optional Mathematics',
-      'Account',
-      'Economics',
-      'Political Science',
-      'Business Studies'
+      'Control Systems',
+      'Mechanics of Machines',
+      'Electronics',
+      'Project Management'
     ]
   };
 
   @override
-  State<SecondaryLevelPage> createState() => _SecondaryLevelPageState();
+  State<DiplomaLevelPage> createState() => _DiplomaLevelPageState();
 
-  // Helper widget to build a card-like row.
+  // Reusable card widget.
   static Widget buildCard(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -83,12 +56,11 @@ class SecondaryLevelPage extends StatefulWidget {
   }
 }
 
-class _SecondaryLevelPageState extends State<SecondaryLevelPage> {
+class _DiplomaLevelPageState extends State<DiplomaLevelPage> {
   int _selectedIndex = 0;
   final PageController _pageController = PageController();
   final Color themeColor = const Color.fromARGB(255, 47, 161, 150);
 
-// Helper method to get the userId from SharedPreferences.
   Future<String?> getUserId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('userId');
@@ -108,7 +80,7 @@ class _SecondaryLevelPageState extends State<SecondaryLevelPage> {
             : IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () {
-                  FocusScope.of(context).unfocus(); // Dismiss keyboard
+                  FocusScope.of(context).unfocus();
                   setState(() {
                     _selectedIndex = 0;
                     _pageController.jumpToPage(0);
@@ -124,18 +96,19 @@ class _SecondaryLevelPageState extends State<SecondaryLevelPage> {
           });
         },
         children: [
-          // Main Grade List page.
+          // Grade list page
           Scaffold(
             body: _buildGradeList(),
           ),
+          // My Community placeholder
           Scaffold(
             body: _buildBlankPage(),
           ),
-          // Notifications placeholder page.
+          // Notifications placeholder
           Scaffold(
             body: _buildBlankPage(),
           ),
-          // Profile page with account management options.
+          // Profile page
           Scaffold(
             body: _buildProfile(),
           ),
@@ -144,6 +117,7 @@ class _SecondaryLevelPageState extends State<SecondaryLevelPage> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
+          // For index 0, return to Dashboard.
           if (index == 0) {
             Navigator.pushReplacement(
               context,
@@ -158,10 +132,7 @@ class _SecondaryLevelPageState extends State<SecondaryLevelPage> {
         },
         items: [
           const BottomNavigationBarItem(
-            icon: Icon(
-              Icons.home,
-              color: Colors.grey, // Always set to grey
-            ),
+            icon: Icon(Icons.home, color: Colors.grey),
             label: '',
           ),
           BottomNavigationBarItem(
@@ -195,7 +166,7 @@ class _SecondaryLevelPageState extends State<SecondaryLevelPage> {
   String _getAppBarTitle(int index) {
     switch (index) {
       case 0:
-        return 'Secondary Level';
+        return 'Diploma Level';
       case 1:
         return 'My Community';
       case 2:
@@ -203,7 +174,7 @@ class _SecondaryLevelPageState extends State<SecondaryLevelPage> {
       case 3:
         return 'Profile';
       default:
-        return 'Secondary Level';
+        return 'Diploma Level';
     }
   }
 
@@ -211,13 +182,13 @@ class _SecondaryLevelPageState extends State<SecondaryLevelPage> {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: ListView.builder(
-        itemCount: SecondaryLevelPage.gradeSubjects.keys.length,
+        itemCount: DiplomaLevelPage.gradeSubjects.keys.length,
         itemBuilder: (context, index) {
-          String grade = SecondaryLevelPage.gradeSubjects.keys.elementAt(index);
+          String grade = DiplomaLevelPage.gradeSubjects.keys.elementAt(index);
           return Column(
             children: [
               buildGradeTile(context, grade),
-              if (index < SecondaryLevelPage.gradeSubjects.keys.length - 1)
+              if (index < DiplomaLevelPage.gradeSubjects.keys.length - 1)
                 Divider(color: Colors.grey[300]),
             ],
           );
@@ -232,28 +203,14 @@ class _SecondaryLevelPageState extends State<SecondaryLevelPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => GradeSubjectsPage(
-                grade: grade,
-                subjects: SecondaryLevelPage.gradeSubjects[grade]!),
+            builder: (context) => DiplomaGradeSubjectsPage(
+              grade: grade,
+              subjects: DiplomaLevelPage.gradeSubjects[grade]!,
+            ),
           ),
         );
       },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              grade,
-              style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.teal),
-            ),
-            const Icon(Icons.arrow_forward_ios, size: 20, color: Colors.teal),
-          ],
-        ),
-      ),
+      child: DiplomaLevelPage.buildCard(grade),
     );
   }
 
@@ -298,7 +255,7 @@ class _SecondaryLevelPageState extends State<SecondaryLevelPage> {
             );
           }),
           _buildProfileOption(Icons.payment, 'Payment History', () {
-            // Add functionality for Payment History if needed.
+            // Add payment history functionality here.
           }),
           const SizedBox(height: 20),
           _buildLogoutButton(),
@@ -335,18 +292,22 @@ class _SecondaryLevelPageState extends State<SecondaryLevelPage> {
   }
 }
 
-class GradeSubjectsPage extends StatefulWidget {
+class DiplomaGradeSubjectsPage extends StatefulWidget {
   final String grade;
   final List<String> subjects;
 
-  const GradeSubjectsPage(
-      {required this.grade, required this.subjects, super.key});
+  const DiplomaGradeSubjectsPage({
+    required this.grade,
+    required this.subjects,
+    super.key,
+  });
 
   @override
-  State<GradeSubjectsPage> createState() => _GradeSubjectsPageState();
+  State<DiplomaGradeSubjectsPage> createState() =>
+      _DiplomaGradeSubjectsPageState();
 }
 
-class _GradeSubjectsPageState extends State<GradeSubjectsPage> {
+class _DiplomaGradeSubjectsPageState extends State<DiplomaGradeSubjectsPage> {
   int _selectedIndex = 0;
   final PageController _pageController = PageController();
   final Color themeColor = const Color.fromARGB(255, 47, 161, 150);
@@ -386,18 +347,18 @@ class _GradeSubjectsPageState extends State<GradeSubjectsPage> {
           });
         },
         children: [
-          // Grade subjects list page.
+          // Grade subjects list page
           _buildGradeSubjectList(),
+          // Placeholders for other pages:
+          Scaffold(body: _buildBlankPage()),
           _buildBlankPage(),
-          // Notifications page placeholder.
-          _buildBlankPage(),
-          // Profile page.
           _buildProfile(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
+          // Return to Dashboard for index 0.
           if (index == 0) {
             Navigator.pushReplacement(
               context,
@@ -412,9 +373,7 @@ class _GradeSubjectsPageState extends State<GradeSubjectsPage> {
         },
         items: [
           const BottomNavigationBarItem(
-            icon: Icon(Icons.home, color: Colors.grey),
-            label: '',
-          ),
+              icon: Icon(Icons.home, color: Colors.grey), label: ''),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.groups,
@@ -478,13 +437,6 @@ class _GradeSubjectsPageState extends State<GradeSubjectsPage> {
   }
 
   Widget buildSubjectTile(BuildContext context, String subject) {
-    // Convert "Grade X" to "Class X" for the API if necessary.
-    String apiClassLevel = widget.grade;
-    if (widget.grade.startsWith("Grade ")) {
-      // Replace "Grade" with "Class" for the API query.
-      apiClassLevel = widget.grade.replaceFirst("Grade", "Class").trim();
-    }
-
     return GestureDetector(
       onTap: () {
         // Navigate to MentorSearchPage with the appropriate parameters.
@@ -492,16 +444,19 @@ class _GradeSubjectsPageState extends State<GradeSubjectsPage> {
           context,
           MaterialPageRoute(
             builder: (context) => MentorSearchPage(
-              category: "Secondary Level",
-              classLevel: apiClassLevel, // Pass the converted value.
+              category: "Diploma",
+              classLevel:
+                  subject, // Passing subject as classLevel (adjust if needed)
               subject: subject,
             ),
           ),
         );
       },
-      child: SecondaryLevelPage.buildCard(subject),
+      child: DiplomaLevelPage.buildCard(subject),
     );
   }
+
+// Inside the _buildProfile() method of MastersLevelPage:
 
   Widget _buildProfile() {
     return Padding(
@@ -509,10 +464,8 @@ class _GradeSubjectsPageState extends State<GradeSubjectsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Settings',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
+          const Text('Settings',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
           _buildProfileOption(Icons.person, 'My Profile', () async {
             String? userId =
@@ -544,7 +497,7 @@ class _GradeSubjectsPageState extends State<GradeSubjectsPage> {
             );
           }),
           _buildProfileOption(Icons.payment, 'Payment History', () {
-            // Add functionality for Payment History if needed.
+            // Add payment history functionality here.
           }),
           const SizedBox(height: 20),
           _buildLogoutButton(),

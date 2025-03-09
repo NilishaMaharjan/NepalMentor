@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../conf_ip.dart';
 
 class SessionHistoryPage extends StatefulWidget {
   const SessionHistoryPage({super.key});
@@ -21,7 +22,7 @@ class _SessionHistoryPageState extends State<SessionHistoryPage> {
   }
 
   Future<void> _fetchSessionHistory() async {
-   final String apiUrl = 'https://192.168.193.174:3000/api/session-history';
+    final String apiUrl = '$baseUrl/api/session-history';
 
     try {
       final response = await http.get(Uri.parse(apiUrl));
@@ -38,7 +39,8 @@ class _SessionHistoryPageState extends State<SessionHistoryPage> {
         if (mounted) {
           setState(() {
             isLoading = false;
-            errorMessage = 'Failed to load session history. Status code: ${response.statusCode}';
+            errorMessage =
+                'Failed to load session history. Status code: ${response.statusCode}';
           });
         }
       }
@@ -68,8 +70,10 @@ class _SessionHistoryPageState extends State<SessionHistoryPage> {
                         final session = sessionHistory[index];
                         return ListTile(
                           leading: const Icon(Icons.history),
-                          title: Text(session['sessionTitle'] ?? 'Unknown Session'),
-                          subtitle: Text('Completed on: ${session['completedOn'] ?? 'Unknown Date'}'),
+                          title: Text(
+                              session['sessionTitle'] ?? 'Unknown Session'),
+                          subtitle: Text(
+                              'Completed on: ${session['completedOn'] ?? 'Unknown Date'}'),
                           trailing: const Icon(Icons.arrow_forward),
                           onTap: () => _showSessionDetails(session),
                         );

@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "C:/Users/DELL/OneDrive/Documents/GitHub/NepalMentor/linux"
+    "cmake.sourceDirectory": "C:/Users/DELL/OneDrive/Documents/GitHub/NepalMentor/linux",
+    "cmake.ignoreCMakeListsMissing": true
 }

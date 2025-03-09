@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../conf_ip.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -30,31 +31,9 @@ class SignupPageState extends State<SignupPage> {
   final FocusNode _locationFocus = FocusNode();
 
   bool _obscurePassword = true;
-  bool _isRobotChecked = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _addFocusListeners();
-  }
-
-  void _addFocusListeners() {
-    _firstNameFocus.addListener(() => setState(() {}));
-    _lastNameFocus.addListener(() => setState(() {}));
-    _emailFocus.addListener(() => setState(() {}));
-    _passwordFocus.addListener(() => setState(() {}));
-    _ageFocus.addListener(() => setState(() {}));
-    _institutionFocus.addListener(() => setState(() {}));
-    _locationFocus.addListener(() => setState(() {}));
-  }
 
   @override
   void dispose() {
-    _disposeControllersAndFocusNodes();
-    super.dispose();
-  }
-
-  void _disposeControllersAndFocusNodes() {
     firstNameController.dispose();
     lastNameController.dispose();
     emailController.dispose();
@@ -70,6 +49,8 @@ class SignupPageState extends State<SignupPage> {
     _ageFocus.dispose();
     _institutionFocus.dispose();
     _locationFocus.dispose();
+
+    super.dispose();
   }
 
   @override
@@ -91,7 +72,6 @@ class SignupPageState extends State<SignupPage> {
                 focusNode: _firstNameFocus,
                 label: 'First Name',
                 validatorMessage: 'Please enter your first name',
-                textCapitalization: TextCapitalization.words,
               ),
               const SizedBox(height: 16),
               _buildTextField(
@@ -99,7 +79,6 @@ class SignupPageState extends State<SignupPage> {
                 focusNode: _lastNameFocus,
                 label: 'Last Name',
                 validatorMessage: 'Please enter your last name',
-                textCapitalization: TextCapitalization.words,
               ),
               const SizedBox(height: 16),
               _buildTextField(
@@ -123,7 +102,6 @@ class SignupPageState extends State<SignupPage> {
                 focusNode: _institutionFocus,
                 label: 'Institution',
                 validatorMessage: 'Please enter your institution',
-                textCapitalization: TextCapitalization.words,
               ),
               const SizedBox(height: 16),
               _buildTextField(
@@ -131,21 +109,9 @@ class SignupPageState extends State<SignupPage> {
                 focusNode: _locationFocus,
                 label: 'Location',
                 validatorMessage: 'Please enter your location',
-                textCapitalization: TextCapitalization.words,
               ),
               const SizedBox(height: 16),
               _buildPasswordField(),
-              const SizedBox(height: 16),
-              CheckboxListTile(
-                title: const Text("I'm not a robot"),
-                value: _isRobotChecked,
-                onChanged: (bool? value) {
-                  setState(() {
-                    _isRobotChecked = value ?? false;
-                  });
-                },
-                controlAffinity: ListTileControlAffinity.leading,
-              ),
               const SizedBox(height: 24),
               _buildSignupButton(),
             ],
@@ -161,22 +127,17 @@ class SignupPageState extends State<SignupPage> {
     required String label,
     required String validatorMessage,
     TextInputType keyboardType = TextInputType.text,
-    TextCapitalization textCapitalization = TextCapitalization.none,
   }) {
     return TextFormField(
       controller: controller,
       focusNode: focusNode,
       keyboardType: keyboardType,
-      textCapitalization: textCapitalization,
       cursorColor: Colors.teal,
-      style: TextStyle(
-        color: focusNode.hasFocus ? Colors.teal : Colors.black,
-      ),
+      style: TextStyle(color: focusNode.hasFocus ? Colors.teal : Colors.black),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(
-          color: focusNode.hasFocus ? Colors.teal : Colors.grey,
-        ),
+        labelStyle:
+            TextStyle(color: focusNode.hasFocus ? Colors.teal : Colors.grey),
         border: const OutlineInputBorder(),
         focusedBorder: const OutlineInputBorder(
           borderSide: BorderSide(color: Colors.teal, width: 2.0),
@@ -185,6 +146,18 @@ class SignupPageState extends State<SignupPage> {
       validator: (value) {
         if (value == null || value.isEmpty) {
           return validatorMessage;
+        }
+        if (label == 'Email') {
+          if (!value.trim().toLowerCase().endsWith('@gmail.com')) {
+            return 'Email must be a valid Gmail address (@gmail.com)';
+          }
+          final parts = value.split('@');
+          if (parts.length != 2 || parts[0].trim().isEmpty) {
+            return 'Enter a valid email address';
+          }
+          if (RegExp(r'^[0-9]').hasMatch(parts[0].trim())) {
+            return 'Email should not start with a number';
+          }
         }
         return null;
       },
@@ -198,13 +171,11 @@ class SignupPageState extends State<SignupPage> {
       obscureText: _obscurePassword,
       cursorColor: Colors.teal,
       style: TextStyle(
-        color: _passwordFocus.hasFocus ? Colors.teal : Colors.black,
-      ),
+          color: _passwordFocus.hasFocus ? Colors.teal : Colors.black),
       decoration: InputDecoration(
         labelText: 'Password',
         labelStyle: TextStyle(
-          color: _passwordFocus.hasFocus ? Colors.teal : Colors.grey,
-        ),
+            color: _passwordFocus.hasFocus ? Colors.teal : Colors.grey),
         border: const OutlineInputBorder(),
         focusedBorder: const OutlineInputBorder(
           borderSide: BorderSide(color: Colors.teal, width: 2.0),
@@ -241,15 +212,11 @@ class SignupPageState extends State<SignupPage> {
       width: double.infinity,
       child: ElevatedButton(
         onPressed: () {
-          if (_formKey.currentState!.validate() && _isRobotChecked) {
+          if (_formKey.currentState!.validate()) {
             _registerMentee();
-          } else if (!_isRobotChecked) {
-            Get.snackbar('Error', "Please confirm you're not a robot.");
           }
         },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.teal,
-        ),
+        style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
         child: const Text('Sign Up', style: TextStyle(color: Colors.white)),
       ),
     );
@@ -258,7 +225,7 @@ class SignupPageState extends State<SignupPage> {
   Future<void> _registerMentee() async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.193.174:3000/api/register/mentee'),
+        Uri.parse('$baseUrl/api/register/mentee'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'firstName': firstNameController.text,
@@ -271,21 +238,17 @@ class SignupPageState extends State<SignupPage> {
         }),
       );
 
-      // Ensure the widget is still mounted
       if (!mounted) return;
 
       if (response.statusCode == 201) {
-        // Successful registration
         Get.snackbar('Success', 'Registered successfully! Check your email.');
         Get.offNamed('/login');
       } else {
-        // Handle error response
         final errorMessage = jsonDecode(response.body)['msg'] ??
             'Registration failed. Please try again.';
         Get.snackbar('Error', errorMessage);
       }
     } catch (e) {
-      // Handle exceptions
       if (mounted) {
         Get.snackbar(
             'Error', 'An unexpected error occurred. Please try again later.');

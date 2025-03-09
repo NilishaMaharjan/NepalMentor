@@ -3,13 +3,23 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dashboard.dart';
+import '../conf_ip.dart';
 
 class RequestPage extends StatefulWidget {
-  final String mentorId; // Mentor's profile ID
-  final String slot; // The selected time slot
+  final String mentorId; // Mentor's id
+  final String slotTime; // The selected time slot (display text)
+  final String slotId; // The actual slot ID
+  final String slotPrice; // Price for the slot (e.g., "500")
+  final String slotType; // Type for the slot (e.g., "Home Tuition" or "Online")
 
-  const RequestPage({Key? key, required this.mentorId, required this.slot})
-      : super(key: key);
+  const RequestPage({
+    Key? key,
+    required this.mentorId,
+    required this.slotTime,
+    required this.slotId,
+    required this.slotPrice,
+    required this.slotType,
+  }) : super(key: key);
 
   @override
   _RequestPageState createState() => _RequestPageState();
@@ -19,12 +29,13 @@ class _RequestPageState extends State<RequestPage> {
   bool isLoading = false; // For showing a loading spinner
   String? errorMessage; // For displaying errors
   String? mentorUserId; // Mentor's user ID
-  String? tuitionType = 'Home Tuition'; // Default tuition type
+  final TextEditingController messageController =
+      TextEditingController(); // Controller for optional message
 
   @override
   void initState() {
     super.initState();
-    _fetchMentorUserId(); // Fetch the user ID for the mentor
+    _fetchMentorUserId(); // Fetch the mentor's user ID
   }
 
   Future<void> _fetchMentorUserId() async {
@@ -34,17 +45,17 @@ class _RequestPageState extends State<RequestPage> {
     });
 
     try {
-      // API endpoint to fetch the user ID using the mentor's profile ID
-      final String apiUrl =
-          'http://192.168.193.174:3000/api/mentors/${widget.mentorId}';
-
+      final String apiUrl = '$baseUrl/api/mentors/${widget.mentorId}';
       final response = await http.get(Uri.parse(apiUrl));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        // Extract the mentor user ID from the response
+        print("Mentor data received: $data");
+
+        // Fetch the mentor user ID from the response
         setState(() {
-          mentorUserId = data['user']?['_id']; // Fetch the user._id
+          mentorUserId =
+              data['user']?['_id']; // Fetch the user._id from the response
           isLoading = false;
         });
       } else {
@@ -85,14 +96,21 @@ class _RequestPageState extends State<RequestPage> {
         return;
       }
 
-      const String apiUrl = 'http://192.168.193.174:3000/api/requests';
+      String apiUrl = '$baseUrl/api/requests';
 
+      // Build the request payload. The slot details now include price and type.
       Map<String, String> requestBody = {
-        'mentor': mentorUserId!, // Use the fetched mentor user ID
+        'mentor': mentorUserId!, // Fetched mentor user ID
         'userId': userId, // Mentee's user ID
-        'tuitionType': tuitionType!, // Add tuition type to request
+        'slotId': widget.slotId, // The actual slot ID
+        'slot':
+            'Rs. ${widget.slotPrice}/month - ${widget.slotType} - ${widget.slotTime}',
       };
 
+      // Include message while requesting (optional)
+      if (messageController.text.trim().isNotEmpty) {
+        requestBody['message'] = messageController.text.trim();
+      }
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {'Content-Type': 'application/json'},
@@ -103,63 +121,64 @@ class _RequestPageState extends State<RequestPage> {
         setState(() {
           isLoading = false;
         });
-         showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.check_circle,
-                                size: 60,
-                                color: Colors.green,
-                              ),
-                              const SizedBox(height: 20),
-                              const Text(
-                                'Your Session Request has been sent.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              const Text(
-                                'Your request has been successfully submitted, and you will be notified via email once the mentor confirms or declines your request. Thank you for your patience!',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(height: 20),
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop(); // Close the dialog
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => const Dashboard()),
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.teal,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                  ),
-                                ),
-                                child: const Text(
-                                  'Thanks, will do',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                  }else if (response.statusCode == 400) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.check_circle,
+                    size: 60,
+                    color: Colors.green,
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Your Session Request has been sent.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Your request has been successfully submitted, and you will be notified once the mentor confirms or declines your request. Thank you for your patience!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Close the dialog
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const Dashboard(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.teal,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                    child: const Text(
+                      'Thanks, will do',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      } else if (response.statusCode == 400) {
         final responseData = json.decode(response.body);
         setState(() {
           errorMessage = responseData['error'] ?? 'Failed to send request.';
@@ -180,130 +199,138 @@ class _RequestPageState extends State<RequestPage> {
   }
 
   @override
+  void dispose() {
+    messageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        backgroundColor: Colors.teal, // Teal background for AppBar
-        title: const Text(
-          'Request Detail',
-          style: TextStyle(color: Colors.black), // Black text in AppBar
-        ),
+        title: const Text('Request Detail'),
+        backgroundColor: Colors.teal,
+        foregroundColor: Colors.black,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Selected Slot:',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.teal, // Teal color for "Selected Slot"
-                fontWeight: FontWeight.w400,
-              ),
+      body: GestureDetector(
+        onTap: () =>
+            FocusScope.of(context).unfocus(), // Dismiss keyboard on tap
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height -
+                  kToolbarHeight -
+                  MediaQuery.of(context).padding.top,
             ),
-            const SizedBox(height: 10),
-            Text(
-              widget.slot,
-              style: const TextStyle(
-                fontSize: 16, // Slightly smaller font for the time
-                color: Colors.black, // Black color for the time
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Choose Tuition Type using Row to display in the same line
-            Text(
-              'Choose Type:',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.teal, // Teal color for "Choose Type"
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                // Home Tuition Radio Button
-                Radio<String>(
-                  value: 'Home Tuition',
-                  groupValue: tuitionType,
-                  onChanged: (value) {
-                    setState(() {
-                      tuitionType = value;
-                    });
-                  },
-                ),
-                Text(
-                  'Home Tuition',
-                  style: TextStyle(
-                    fontSize: 16, // Increased font size
-                    color: Colors.black, // Black color for the label
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-
-                // Add space between the radio buttons
-                const SizedBox(width: 80),  // Adjust space as per your need
-
-                // Online Radio Button
-                Radio<String>(
-                  value: 'Online',
-                  groupValue: tuitionType,
-                  onChanged: (value) {
-                    setState(() {
-                      tuitionType = value;
-                    });
-                  },
-                ),
-                Text(
-                  'Online',
-                  style: TextStyle(
-                    fontSize: 16, // Increased font size
-                    color: Colors.black, // Black color for the label
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            if (errorMessage != null)
-              Text(
-                errorMessage!,
-                style: const TextStyle(color: Colors.red, fontSize: 14),
-              ),
-            const Spacer(), // Push the button toward the bottom center
-            Align(
-              alignment: Alignment.center, // Center horizontally
-              child: SizedBox(
-                width: 200, // Smaller width for the button
-                height: 50, // Larger height for the button
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal, // Teal background for button
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
+            child: IntrinsicHeight(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Selected Slot Display
+                  Text(
+                    'Selected Slot:',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.teal,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  onPressed: isLoading || mentorUserId == null ? null : sendRequest,
-                  child: isLoading
-                      ? const CircularProgressIndicator(
-                          color: Colors.white,
-                        )
-                      : const Text(
-                          'Send Request',
-                          style: TextStyle(
-                            fontSize: 18, // Smaller font size for button text
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white, // White text for the button
+                  const SizedBox(height: 8),
+                  Text(
+                    widget.slotTime,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Display Slot Price and Type
+                  Text(
+                    'Slot Details:',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.teal,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Price: Rs. ${widget.slotPrice}/month',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Type: ${widget.slotType}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Optional Additional Message
+                  Text(
+                    'Additional Message (optional):',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.teal,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: messageController,
+                    decoration: InputDecoration(
+                      hintText: 'Enter any additional message...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                    maxLines: 3,
+                  ),
+                  const Spacer(),
+                  if (errorMessage != null)
+                    Text(
+                      errorMessage!,
+                      style: const TextStyle(color: Colors.red, fontSize: 14),
+                    ),
+                  Align(
+                    alignment: Alignment.center,
+                    child: SizedBox(
+                      width: 220,
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
                           ),
                         ),
-                ),
+                        onPressed: isLoading || mentorUserId == null
+                            ? null
+                            : sendRequest,
+                        child: isLoading
+                            ? const CircularProgressIndicator(
+                                color: Colors.white)
+                            : const Text(
+                                'Send Request',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

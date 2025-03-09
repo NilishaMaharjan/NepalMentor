@@ -1,11 +1,13 @@
-import 'dart:convert'; // Required for decoding JSON
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:nepalmentors/conf_ip.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'edit_availability.dart'; // Import the ViewAvailabilityScreen
-import 'package:get/get.dart'; // Import GetX for navigation
-import 'login.dart'; // Import your Login page (assuming it's named login.dart)
+import 'edit_availability.dart';
+import 'package:get/get.dart';
+import 'login.dart';
 import 'mentees_list_screen.dart';
-import 'package:http/http.dart' as http; // Required for API calls
+import 'package:http/http.dart' as http;
+import 'mentorprofile_edit.dart';
 
 class MentorDashboard extends StatefulWidget {
   const MentorDashboard({super.key});
@@ -17,7 +19,7 @@ class MentorDashboard extends StatefulWidget {
 class _MentorDashboardState extends State<MentorDashboard> {
   int _selectedIndex = 0;
   String? userId;
-  List<String> communitySlots = []; // Holds community slots dynamically
+  List<dynamic> communitySlots = [];
   List<Map<String, dynamic>> menteeRequests =
       []; // Holds mentee requests dynamically
 
@@ -44,15 +46,19 @@ class _MentorDashboardState extends State<MentorDashboard> {
 
     try {
       final response = await http.get(
-        Uri.parse(
-            'http://192.168.193.174:3000/api/availability/$userId'), // Update with correct endpoint
+        Uri.parse('$baseUrl/api/availability/$userId'),
         headers: {'Content-Type': 'application/json'},
       );
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        setState(() {
-          communitySlots = List<String>.from(data['slots'] ?? []);
-        });
+        // Check if data['slots'] is a List before using it
+        if (data['slots'] is List) {
+          setState(() {
+            communitySlots = List<dynamic>.from(data['slots']);
+          });
+        } else {
+          print("Unexpected format for slots: ${data['slots']}");
+        }
       }
     } catch (e) {
       print("Error fetching availability: $e");
@@ -65,15 +71,19 @@ class _MentorDashboardState extends State<MentorDashboard> {
 
     try {
       final response = await http.get(
-        Uri.parse(
-            'http://192.168.193.174:3000/api/requests/mentor?userId=$userId'),
+        Uri.parse('$baseUrl/api/requests/mentor?userId=$userId'),
         headers: {'Content-Type': 'application/json'},
       );
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        setState(() {
-          menteeRequests = List<Map<String, dynamic>>.from(data);
-        });
+        // Check if data is a List before using it
+        if (data is List) {
+          setState(() {
+            menteeRequests = List<Map<String, dynamic>>.from(data);
+          });
+        } else {
+          print("Unexpected format for mentee requests: $data");
+        }
       } else {
         print("Failed to fetch mentee requests: ${response.statusCode}");
       }
@@ -82,22 +92,41 @@ class _MentorDashboardState extends State<MentorDashboard> {
     }
   }
 
-  // Update mentee request status (accept/reject)
   Future<void> _updateRequestStatus(String requestId, String status) async {
     try {
       final response = await http.patch(
-        Uri.parse('http://192.168.193.174:3000/api/requests/$requestId'),
+        Uri.parse('$baseUrl/api/requests/$requestId'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'status': status}),
       );
+
       if (response.statusCode == 200) {
-        _fetchMenteeRequests(); // Refresh mentee requests
+        _fetchMenteeRequests(); // Refresh requests
       } else {
         print("Failed to update request status: ${response.statusCode}");
       }
     } catch (e) {
       print("Error updating request status: $e");
     }
+  }
+
+  // update the UI for request status changes.
+  void _quickUpdateRequestStatus(int index, String status) {
+    final removedRequest = menteeRequests[index];
+    setState(() {
+      menteeRequests.removeAt(index);
+    });
+
+    _updateRequestStatus(removedRequest['_id'], status).catchError((error) {
+      setState(() {
+        menteeRequests.insert(index, removedRequest);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content:
+                Text('Failed to update request status. Please try again.')),
+      );
+    });
   }
 
   void _onItemTapped(int index) {
@@ -110,9 +139,7 @@ class _MentorDashboardState extends State<MentorDashboard> {
   Future<void> _logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('userId'); // Clear the stored userId
-
-    // Navigate to the login page
-    Get.offAll(() => const LoginScreen()); // actual login page
+    Get.offAll(() => const LoginScreen());
   }
 
   @override
@@ -237,61 +264,74 @@ class _MentorDashboardState extends State<MentorDashboard> {
     );
   }
 
-  // Build each community card with a modern design
-  Widget _buildCommunityCard(String slot) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 4,
-      shadowColor: Colors.teal.withOpacity(0.3),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            Container(
-              height: 50,
-              width: 50,
-              decoration: BoxDecoration(
-                color: Colors.teal.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(25),
+  // Build each community card using the updated slot model.
+  // The slot id remains available in the slot map for future use.
+  Widget _buildCommunityCard(dynamic slot) {
+    // Each slot is expected to be a Map with keys like '_id' and 'time'
+    final timeInfo =
+        slot is Map && slot.containsKey('time') ? slot['time'] : 'No time info';
+    return InkWell(
+      onTap: () {
+        // Navigate to chat passing the entire slot map.
+        Get.toNamed('/chat', arguments: {
+          'slot': slot,
+          'receiverId': userId,
+        });
+      },
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 4,
+        shadowColor: Colors.teal.withOpacity(0.3),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Container(
+                height: 50,
+                width: 50,
+                decoration: BoxDecoration(
+                  color: Colors.teal.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: const Icon(
+                  Icons.group,
+                  size: 28,
+                  color: Colors.teal,
+                ),
               ),
-              child: const Icon(
-                Icons.group,
-                size: 28,
-                color: Colors.teal,
-              ),
-            ),
-            const SizedBox(width: 15),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Community Slot',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.teal.shade900,
+              const SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Community Slot',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.teal.shade900,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    slot,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.black87,
+                    const SizedBox(height: 5),
+                    Text(
+                      'Time: $timeInfo',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // Build Mentee Requests Screen
+  // Build the Mentee Requests Screen
   Widget _buildMenteeRequests() {
     return menteeRequests.isEmpty
         ? const Center(
@@ -304,45 +344,203 @@ class _MentorDashboardState extends State<MentorDashboard> {
             itemCount: menteeRequests.length,
             itemBuilder: (context, index) {
               final request = menteeRequests[index];
-
-              // Access the mentee's first and last name from the populated data
               final menteeFirstName = request['mentee'] != null
                   ? request['mentee']['firstName'] ?? 'Unknown'
                   : 'Unknown';
               final menteeLastName = request['mentee'] != null
                   ? request['mentee']['lastName'] ?? 'Unknown'
                   : 'Unknown';
-              final menteeName =
-                  '$menteeFirstName $menteeLastName'; // Combine first and last name
+              final menteeName = '$menteeFirstName $menteeLastName';
+              final menteeEmail = request['mentee']?['email'] ?? 'Unknown';
 
-              final menteeEmail = request['mentee']['email'] ?? 'Unknown';
-          
+              // Build slot details widget with separate lines for time, price, and type.
+              Widget slotDetailsWidget;
+              if (request['slot'] != null) {
+                if (request['slot'] is Map) {
+                  final slotMap = request['slot'];
+                  String time = slotMap['time'] ?? 'No time info';
+                  String price = slotMap['price'] != null
+                      ? 'Rs. ${slotMap['price']}/month'
+                      : '';
+                  String type = slotMap['type'] ?? '';
+                  slotDetailsWidget = Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Time: $time', style: const TextStyle(fontSize: 14)),
+                      if (price.isNotEmpty)
+                        Text('Price: $price',
+                            style: const TextStyle(fontSize: 14)),
+                      if (type.isNotEmpty)
+                        Text('Type: $type',
+                            style: const TextStyle(fontSize: 14)),
+                    ],
+                  );
+                } else if (request['slot'] is String) {
+                  // Split the string using ' - ' as a delimiter.
+                  List<String> parts = request['slot'].toString().split(' - ');
+                  if (parts.length >= 3) {
+                    String price = parts[0].trim();
+                    String type = parts[1].trim();
+                    // Join all remaining parts for the time to capture ranges like "1:00 AM -2:00 AM".
+                    String time = parts.sublist(2).join(' - ').trim();
+                    slotDetailsWidget = Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Time: $time',
+                            style: const TextStyle(fontSize: 14)),
+                        Text('Price: $price',
+                            style: const TextStyle(fontSize: 14)),
+                        Text('Type: $type',
+                            style: const TextStyle(fontSize: 14)),
+                      ],
+                    );
+                  } else {
+                    slotDetailsWidget = Text(request['slot'],
+                        style: const TextStyle(fontSize: 14));
+                  }
+                } else {
+                  slotDetailsWidget = const Text(
+                    'No slot selected',
+                    style: TextStyle(fontSize: 14),
+                  );
+                }
+              } else if (request['slotId'] != null) {
+                // Search for a matching slot in communitySlots based on _id.
+                final matchingSlot = communitySlots.firstWhere(
+                  (slot) => slot['_id'] == request['slotId'],
+                  orElse: () => null,
+                );
+                if (matchingSlot != null && matchingSlot is Map) {
+                  String time = matchingSlot['time'] ?? 'No time info';
+                  String price = matchingSlot['price'] != null
+                      ? 'Rs. ${matchingSlot['price']}/month'
+                      : '';
+                  String type = matchingSlot['type'] ?? '';
+                  slotDetailsWidget = Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Time: $time', style: const TextStyle(fontSize: 14)),
+                      if (price.isNotEmpty)
+                        Text('Price: $price',
+                            style: const TextStyle(fontSize: 14)),
+                      if (type.isNotEmpty)
+                        Text('Type: $type',
+                            style: const TextStyle(fontSize: 14)),
+                    ],
+                  );
+                } else {
+                  slotDetailsWidget = const Text(
+                    'No slot selected',
+                    style: TextStyle(fontSize: 14),
+                  );
+                }
+              } else {
+                slotDetailsWidget = const Text(
+                  'No slot selected',
+                  style: TextStyle(fontSize: 14),
+                );
+              }
 
               return Card(
                 margin:
-                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: ListTile(
-                  leading: const CircleAvatar(
-                    backgroundColor: Colors.teal,
-                    child: Icon(Icons.person, color: Colors.white),
-                  ),
-                  title: Text(menteeName),
-                  subtitle: Text('$menteeEmail'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.check, color: Colors.green),
-                        onPressed: () =>
-                            _updateRequestStatus(request['id'], 'accepted'),
+                      // Mentee Details
+                      Text(
+                        menteeName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.red),
-                        onPressed: () =>
-                            _updateRequestStatus(request['id'], 'rejected'),
+                      const SizedBox(height: 4),
+                      Text('Email: $menteeEmail',
+                          style: const TextStyle(fontSize: 14)),
+                      const SizedBox(height: 12),
+                      // Slot Details
+                      const Text(
+                        'Slot Details:',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.teal,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      slotDetailsWidget,
+                      const SizedBox(height: 12),
+                      // Request Message (if any)
+                      if (request['message'] != null &&
+                          request['message'].toString().trim().isNotEmpty)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Message:',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: Colors.teal,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              request['message'],
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+                        ),
+                      // Action Buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () =>
+                                _quickUpdateRequestStatus(index, 'accepted'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Colors.teal, // Theme color for Accept
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 12),
+                            ),
+                            child: const Text(
+                              'Accept',
+                              style:
+                                  TextStyle(fontSize: 14, color: Colors.white),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          ElevatedButton(
+                            onPressed: () =>
+                                _quickUpdateRequestStatus(index, 'rejected'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Colors.red.shade900, // Dark red for Reject
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 12),
+                            ),
+                            child: const Text(
+                              'Reject',
+                              style:
+                                  TextStyle(fontSize: 14, color: Colors.white),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -352,11 +550,11 @@ class _MentorDashboardState extends State<MentorDashboard> {
           );
   }
 
+  // Build the Profile Screen
   Widget _buildProfile() {
     return ListView(
       padding: const EdgeInsets.all(16.0),
       children: [
-        // "Settings" heading at the top
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 8.0),
           child: Text(
@@ -368,11 +566,17 @@ class _MentorDashboardState extends State<MentorDashboard> {
             ),
           ),
         ),
-
         ListTile(
           leading: const Icon(Icons.account_circle, color: Colors.teal),
           title: const Text('My Profile'),
-          onTap: () {},
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const MentorProfileEditPage(),
+              ),
+            );
+          },
         ),
         ListTile(
           leading: const Icon(Icons.schedule, color: Colors.teal),
@@ -386,13 +590,13 @@ class _MentorDashboardState extends State<MentorDashboard> {
           leading: const Icon(Icons.star, color: Colors.teal),
           title: const Text('My Mentees'),
           onTap: () async {
-            // Navigates to MenteesListScreen
             await Get.to(() => const MenteesListScreen());
           },
         ),
         ListTile(
           leading: const Icon(Icons.payment, color: Colors.teal),
           title: const Text('Payment History'),
+          onTap: () {},
         ),
         ListTile(
           leading: const Icon(Icons.logout, color: Colors.red),

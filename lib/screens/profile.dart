@@ -1,67 +1,188 @@
-//profile.dart
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'request.dart'; // Import RequestPage
+import 'package:shared_preferences/shared_preferences.dart';
+import 'request.dart';
+import '../conf_ip.dart';
 
 class MentorProfilePage extends StatefulWidget {
   final String userId;
 
-  const MentorProfilePage({super.key, required this.userId});
+  const MentorProfilePage({Key? key, required this.userId}) : super(key: key);
 
   @override
-  State<MentorProfilePage> createState() => _MentorProfilePageState();
+  _MentorProfilePageState createState() => _MentorProfilePageState();
 }
 
 class _MentorProfilePageState extends State<MentorProfilePage> {
   late Future<Map<String, dynamic>> mentorData;
   late Future<Map<String, dynamic>?> availabilityData;
-  List<Map<String, dynamic>> reviews = []; // To store and display reviews
-  String?
-      currentUserId; // Store the current user's ID to compare with review owner
-  double rating = 0.0; // Track the rating value
+  List<Map<String, dynamic>> reviews = [];
+  String? currentUserId;
 
   @override
   void initState() {
-    super.initState();  
-    mentorData = fetchMentorData(widget.userId);
-    availabilityData = fetchAvailabilityData(widget.userId);
-    currentUserId = "current_user_id"; // Replace with actual user ID logic
+    super.initState();
+    _loadCurrentUserId();
+    mentorData = fetchMentorData(widget.userId); // Initialize mentorData
+    availabilityData =
+        fetchAvailabilityData(widget.userId); // Initialize availabilityData
+    fetchReviews();
   }
 
-  // Function to fetch mentor data
-  Future<Map<String, dynamic>> fetchMentorData(String userId) async {
+  // Load current user ID from shared preferences
+  Future<void> _loadCurrentUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      currentUserId = prefs.getString('userId');
+    });
+  }
+
+  Future<void> fetchReviews() async {
     final response = await http.get(
-      Uri.parse('http://192.168.193.174:3000/api/mentors/$userId'),
+      Uri.parse('$baseUrl/api/reviews/${widget.userId}'),
     );
 
     if (response.statusCode == 200) {
-      return json.decode(response.body);
+      final data = json.decode(response.body);
+      setState(() {
+        reviews = List<Map<String, dynamic>>.from(
+          data['reviews'].map((review) {
+            return {
+              'review': review['review'],
+              'rating': (review['rating'] as num).toDouble(),
+              'userId': review['userId']?['_id'],
+              'menteeName': review['userId'] != null
+                  ? '${review['userId']['firstName']} ${review['userId']['lastName']}'
+                  : 'Anonymous',
+              '_id': review['_id'],
+            };
+          }),
+        );
+      });
+    } else {
+      print('Failed to fetch reviews: ${response.body}');
+    }
+  }
+
+  // Fetch mentor data from backend
+  Future<Map<String, dynamic>> fetchMentorData(String userId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/mentors/$userId'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data is Map<String, dynamic>) {
+        return data;
+      } else {
+        throw Exception("Unexpected response format for mentor data");
+      }
     } else {
       throw Exception('Failed to load mentor data');
     }
   }
 
-  // Function to fetch availability data (can be null if not available)
-  Future<Map<String, dynamic>?> fetchAvailabilityData(String userId) async {
-    final response = await http.get(
-      Uri.parse('http://192.168.193.174:3000/api/availability/$userId'),
+  // Submit review to backend
+  Future<void> submitReview(
+      String mentorId, String reviewText, double rating) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/reviews'),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        'mentorId': mentorId,
+        'userId': currentUserId,
+        'review': reviewText,
+        'rating': rating,
+      }),
     );
 
-    if (response.statusCode == 200) {
-      return json.decode(response.body);
+    if (response.statusCode == 201) {
+      // After submitting the review, fetch the updated reviews.
+      fetchReviews();
     } else {
-      return null; // Return null if no availability data
+      throw Exception('Failed to submit review');
     }
   }
 
-  // Add this method for review submission or editing
+  // Fetch availability data
+  Future<Map<String, dynamic>?> fetchAvailabilityData(String userId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/availability/$userId'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data is Map<String, dynamic>) {
+        return data;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
+
+  Future<void> updateReview(
+      String reviewId, String updatedText, double updatedRating) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('jwtToken'); // Replace with your token key
+
+    final url = '$baseUrl/api/reviews/$reviewId';
+
+    try {
+      final response = await http.put(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          'review': updatedText,
+          'rating': updatedRating,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('Review updated successfully');
+        await fetchReviews();
+      } else {
+        print('Failed to update review: ${response.body}');
+      }
+    } catch (e) {
+      print('Error updating review: $e');
+    }
+  }
+
+  Future<void> deleteReview(String reviewId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('jwtToken');
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/api/reviews/$reviewId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          reviews.removeWhere((review) => review['_id'] == reviewId);
+        });
+        print('Review deleted successfully');
+      } else {
+        print('Failed to delete review: ${response.body}');
+      }
+    } catch (e) {
+      print('Error deleting review: $e');
+    }
+  }
+
   void _showReviewDialog(String mentorId,
       [Map<String, dynamic>? reviewToEdit]) {
     final TextEditingController reviewController =
-        TextEditingController(text: reviewToEdit?['review'] ?? '');
-    rating = reviewToEdit?['rating'] ?? 0.0;
+        TextEditingController(text: reviewToEdit?['review']?.toString() ?? '');
+    double dialogRating = reviewToEdit?['rating'] ?? 0.0;
 
     showDialog(
       context: context,
@@ -71,73 +192,57 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
             reviewToEdit == null ? 'Submit Review' : 'Edit Review',
             style: const TextStyle(color: Colors.teal),
           ),
-          content: SingleChildScrollView(
-            // Added to prevent overflow
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(5, (index) {
-                    return IconButton(
-                      icon: Icon(
-                        index < rating ? Icons.star : Icons.star_border,
-                        color: Colors.amber,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          rating = index + 1.0;
-                        });
-                      },
-                    );
-                  }),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: reviewController,
-                  maxLength: 500,
-                  decoration: InputDecoration(
-                    hintText: 'Describe your experience (optional)',
-                    border: const OutlineInputBorder(),
-                    hintStyle: const TextStyle(color: Colors.grey),
-                    counterText: '${reviewController.text.length}/500',
+          content: StatefulBuilder(
+            builder: (BuildContext context, setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(5, (index) {
+                      return IconButton(
+                        icon: Icon(
+                          index < dialogRating ? Icons.star : Icons.star_border,
+                          color: Colors.amber,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            dialogRating = index + 1.0;
+                          });
+                        },
+                      );
+                    }),
                   ),
-                  onChanged: (text) {
-                    setState(() {});
-                  },
-                  maxLines: 3,
-                ),
-              ],
-            ),
+                  TextField(
+                    controller: reviewController,
+                    decoration: const InputDecoration(
+                      hintText: 'Describe your experience (optional)',
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLines: 3,
+                  ),
+                ],
+              );
+            },
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
               onPressed: () {
-                final review = {
-                  'mentorId': mentorId,
-                  'review': reviewController.text,
-                  'rating': rating,
-                  'userId': currentUserId,
-                };
-                setState(() {
-                  if (reviewToEdit == null) {
-                    reviews.add(review);
-                  } else {
-                    int index = reviews.indexOf(reviewToEdit);
-                    if (index != -1) {
-                      reviews[index] = review;
-                    }
-                  }
-                });
+                final reviewText = reviewController.text;
+                final reviewId = reviewToEdit?['_id'];
+
+                if (reviewId != null) {
+                  updateReview(reviewId, reviewText, dialogRating);
+                } else {
+                  submitReview(widget.userId, reviewText, dialogRating);
+                }
                 Navigator.of(context).pop();
               },
-              child: const Text('Submit', style: TextStyle(color: Colors.teal)),
+              child: const Text('Submit'),
             ),
           ],
         );
@@ -145,8 +250,21 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
     );
   }
 
+  double _calculateAverageRating() {
+    if (reviews.isEmpty) return 0.0;
+    double total = 0.0;
+    for (var review in reviews) {
+      total += (review['rating'] as double);
+    }
+    return total / reviews.length;
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Compute average rating and review count based on the reviews list
+    double avgRating = _calculateAverageRating();
+    int reviewCount = reviews.length;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mentor Profile'),
@@ -163,8 +281,10 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
             return const Center(child: Text('No data available'));
           }
 
-          final mentor = snapshot.data![0];
-          final availability = snapshot.data![1];
+          final Map<String, dynamic> mentor =
+              snapshot.data![0] as Map<String, dynamic>;
+          final Map<String, dynamic>? availability =
+              snapshot.data![1] as Map<String, dynamic>?;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20.0),
@@ -174,9 +294,11 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                 // Profile Image and Name
                 Row(
                   children: [
-                    const CircleAvatar(
+                    CircleAvatar(
                       radius: 50,
-                      backgroundImage: AssetImage('assets/default.png'),
+                      backgroundImage: mentor['profilePicture'] != null
+                          ? NetworkImage('$baseUrl/${mentor['profilePicture']}')
+                          : AssetImage('assets/default.png') as ImageProvider,
                     ),
                     const SizedBox(width: 20),
                     Expanded(
@@ -184,7 +306,7 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${mentor['firstName']} ${mentor['lastName'] ?? ''}',
+                            '${mentor['firstName']?.toString() ?? ''} ${mentor['lastName']?.toString() ?? ''}',
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -193,7 +315,7 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            mentor['jobTitle'] ?? 'No title',
+                            mentor['jobTitle']?.toString() ?? 'No title',
                             style: const TextStyle(
                                 fontSize: 18, color: Colors.black),
                           ),
@@ -202,7 +324,7 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                             children: [
                               const Icon(Icons.star, color: Colors.amber),
                               Text(
-                                ' ${mentor['rating'] ?? 'N/A'} (${mentor['reviewsCount'] ?? '0'} reviews)',
+                                ' ${avgRating > 0 ? avgRating.toStringAsFixed(1) : 'N/A'} ($reviewCount reviews)',
                                 style: const TextStyle(fontSize: 16),
                               ),
                             ],
@@ -213,7 +335,6 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                   ],
                 ),
                 const SizedBox(height: 24),
-
                 // Skills Section
                 const Text(
                   'Skills:',
@@ -228,11 +349,12 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                   runSpacing: 10,
                   children:
                       (mentor['skills'] as List<dynamic>? ?? []).map((skill) {
+                    final String skillText = (skill is Map)
+                        ? (skill['name']?.toString() ?? '')
+                        : skill.toString();
                     return Container(
                       padding: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 20,
-                      ),
+                          vertical: 10, horizontal: 20),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
@@ -249,7 +371,7 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                         ),
                       ),
                       child: Text(
-                        skill,
+                        skillText,
                         style: const TextStyle(
                           color: Colors.teal,
                           fontWeight: FontWeight.bold,
@@ -259,42 +381,76 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                   }).toList(),
                 ),
                 const SizedBox(height: 24),
-
                 // Qualifications Section
-                if (mentor['qualifications'] != null) ...[
+                if (mentor['qualifications'] != null ||
+                    mentor['bio'] != null ||
+                    mentor['location'] != null) ...[
                   const Text(
-                    'Qualifications:',
+                    'Details:',
                     style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.teal),
                   ),
                   const SizedBox(height: 6),
-                  Text(
-                    mentor['qualifications'],
-                    style: const TextStyle(fontSize: 16, height: 1.6),
-                  ),
+                  if (mentor['qualifications'] != null)
+                    RichText(
+                      text: TextSpan(
+                        text: 'Qualifications: ',
+                        style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black),
+                        children: [
+                          TextSpan(
+                            text: mentor['qualifications'].toString(),
+                            style:
+                                const TextStyle(fontWeight: FontWeight.normal),
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (mentor['location'] != null) ...[
+                    const SizedBox(height: 6),
+                    RichText(
+                      text: TextSpan(
+                        text: 'Location: ',
+                        style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black),
+                        children: [
+                          TextSpan(
+                            text: mentor['location'].toString(),
+                            style:
+                                const TextStyle(fontWeight: FontWeight.normal),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  if (mentor['bio'] != null) ...[
+                    const SizedBox(height: 6),
+                    RichText(
+                      text: TextSpan(
+                        text: 'Bio: ',
+                        style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black),
+                        children: [
+                          TextSpan(
+                            text: mentor['bio'].toString(),
+                            style:
+                                const TextStyle(fontWeight: FontWeight.normal),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 24),
                 ],
-
-                // Bio Section
-                if (mentor['bio'] != null) ...[
-                  const Text(
-                    'Bio:',
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.teal),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    mentor['bio'],
-                    style: const TextStyle(fontSize: 16, height: 1.6),
-                  ),
-                  const SizedBox(height: 24),
-                ],
-
-                // Timetable Section (without borders)
+                // Timetable Section
                 if (availability != null &&
                     (availability['slots'] as List).isNotEmpty) ...[
                   const Text(
@@ -308,38 +464,87 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                   Column(
                     children: [
                       for (int index = 0;
-                          index < availability['slots'].length;
+                          index < (availability['slots'] as List).length;
                           index++) ...[
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(10.0),
-                                child: Text(
-                                  availability['slots'][index],
-                                  style: const TextStyle(fontSize: 16),
-                                ),
-                              ),
+                        Builder(builder: (context) {
+                          final slot = (availability['slots'] as List)[index];
+                          final String slotId = slot['_id']?.toString() ?? '';
+                          final String slotTime =
+                              slot['time']?.toString() ?? '';
+                          final String slotPrice = slot['price'] != null
+                              ? slot['price'].toString()
+                              : '0';
+                          // Extract the slot type
+                          final String slotType = slot['type'] != null
+                              ? slot['type'].toString()
+                              : 'Unknown';
+
+                          return Card(
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => RequestPage(
-                                      slot: availability['slots'][index],
-                                      mentorId: mentor['_id'],
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Time: $slotTime',
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Price: Rs. $slotPrice /month',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey[700],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Type: $slotType',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey[700],
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                );
-                              },
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.teal,
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => RequestPage(
+                                            slotId: slotId,
+                                            slotTime: slotTime,
+                                            mentorId: mentor['_id'].toString(),
+                                            slotPrice: slotPrice,
+                                            slotType: slotType,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: Colors.teal,
+                                    ),
+                                    child: const Text('Available'),
+                                  ),
+                                ],
                               ),
-                              child: const Text('Available'),
                             ),
-                          ],
-                        ),
+                          );
+                        }),
                       ],
                     ],
                   ),
@@ -359,7 +564,6 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                   ),
                   const SizedBox(height: 24),
                 ],
-
                 // Reviews Section
                 const Text(
                   'Reviews:',
@@ -376,22 +580,62 @@ class _MentorProfilePageState extends State<MentorProfilePage> {
                   ),
                 ...reviews.map((review) {
                   return ListTile(
-                    title: Text('${review['review']}'),
-                    subtitle: Text('Rating: ${review['rating']}/5'),
+                    subtitle: Row(
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${review['menteeName']?.toString() ?? 'Anonymous'}',
+                              style: const TextStyle(
+                                  fontSize: 16, color: Colors.black),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: List.generate(5, (index) {
+                                return Icon(
+                                  index < (review['rating'] ?? 0).toInt()
+                                      ? Icons.star
+                                      : Icons.star_border,
+                                  color: Colors.amber,
+                                );
+                              }),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${review['review']?.toString() ?? 'No review available'}',
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                     trailing: review['userId'] == currentUserId
-                        ? IconButton(
-                            icon: const Icon(Icons.edit),
-                            color: Colors.teal,
-                            onPressed: () =>
-                                _showReviewDialog(mentor['_id'], review),
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                color: Colors.teal,
+                                onPressed: () => _showReviewDialog(
+                                    mentor['_id'].toString(), review),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete),
+                                color: Colors.red,
+                                onPressed: () =>
+                                    deleteReview(review['_id'].toString()),
+                              ),
+                            ],
                           )
                         : null,
                   );
-                }).toList(),
+                }),
                 // Button to submit a new review
                 ListTile(
                   title: TextButton(
-                    onPressed: () => _showReviewDialog(mentor['_id']),
+                    onPressed: () =>
+                        _showReviewDialog(mentor['_id'].toString()),
                     child: const Text(
                       'Submit a Review',
                       style: TextStyle(color: Colors.teal),
